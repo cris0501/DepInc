@@ -1,0 +1,41 @@
+# Ignorar archivos compilados de Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Ignorar entornos virtuales
+venv/
+env/
+.venv/
+.env/
+
+# Ignorar archivos de configuración y secretos
+config/*.env
+config/*.secret
+*.key
+*.pem
+
+# Ignorar logs y archivos temporales
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# Ignorar archivos de bases de datos locales o temporales
+*.sqlite3
+*.db
+
+# Ignorar archivos específicos de IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignorar dependencias en contenedores y archivos de Docker (si los agregas en el futuro)
+*.dockerfile
+Dockerfile
+docker-compose.yml
+node_modules/
+

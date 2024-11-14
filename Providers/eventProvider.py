@@ -14,5 +14,5 @@ class eventProvider (Provider):
     def __init__(self):
         print('Iniciando Event')
 
-    def create():
+    def create(self):
         pass

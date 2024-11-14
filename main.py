@@ -12,7 +12,7 @@ def resolve(cls: Type):
     for [key, item] in data.parameters.items():
         if item.annotation != inspect._empty:
             print(key,',',item.annotation)
-            item.annotation()
+            temp = item.annotation()
 
 def main ():
     print("Iniciando DepInc")

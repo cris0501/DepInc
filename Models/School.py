@@ -2,6 +2,9 @@
 from Providers.dbProvider import *
 from Providers.eventProvider import *
 
-class School ():
-    def __init__(self, db: dbProvider, event: eventProvider):
+class School (eventProvider):
+    def __init__(self, db: dbProvider):
         db.__init__()
+
+    def change(self):
+        self.notify("Entrada")

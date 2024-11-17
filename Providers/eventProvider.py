@@ -2,17 +2,27 @@
 from base.Provider import Provider
 
 class eventProvider (Provider):
-    _instance = None
+    #_instance = None
+    _observers = []
     
-    def __new__(cls):
-        print(cls)
-        if cls._instance is None:
-            print('Creando Event')
-            cls._instance = super(eventProvider, cls).__new__(cls)
-        return cls._instance
+    #def __new__(cls, *args, **kwargs):
+    #    if cls._instance is None:
+    #        cls._instance = super(eventProvider, cls).__new__(cls)
+    #    return cls._instance
 
     def __init__(self):
-        print('Iniciando Event')
+        pass
 
     def create(self):
         pass
+
+    def register(self, observer):
+        self._observers.append(observer)
+
+    def remove(self, observer):
+        self._observers.remove(observer)
+
+    def notify(self):
+        for obs in self._observers:
+            obs.update('Salida')
+

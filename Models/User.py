@@ -1,6 +1,10 @@
 #!/bin/python
 from Providers.dbProvider import dbProvider as DB
+from Providers.observerProvider import observerProvider
 
-class User ():
+class User (observerProvider):
     def __init__(self, db: DB):
-        db.__init__()
+        pass
+
+    def update(self, msj):
+        print(f"User: {msj}")

@@ -4,15 +4,23 @@ from typing import Type, Any
 from Models.User import User
 from Models.School import School
 
-def loadProviders():
-    pass
+from Providers.dbProvider import *
+from Providers.eventProvider import *
+from Providers.observerProvider import *
 
-def resolve(cls: Type):
-    data = inspect.signature(cls.__init__)
-    for [key, item] in data.parameters.items():
-        if item.annotation != inspect._empty:
-            print(key,',',item.annotation)
-            temp = item.annotation()
+_dependencies = {}
+
+def loadProviders(interface, implementation):
+    _dependencies[interface] = implementation
+
+def resolve(cls):
+    constructor = cls.__init__
+    parameters = constructor.__annotations__
+    dependencies = {
+        name: _dependencies[param] for name,
+        param in parameters.items() if param in _dependencies
+    }
+    return cls(**dependencies)
 
 def main ():
     print("Iniciando DepInc")
@@ -28,8 +36,18 @@ def main ():
     # Busqueda y ejecucion de routeo
 
     # user = User()
-    resolve(User)
-    resolve(School)
+    loadProviders(eventProvider, eventProvider())
+    loadProviders(observerProvider, observerProvider())
+    loadProviders(dbProvider, dbProvider())
+
+    user = resolve(User)
+    user2 = resolve(User)
+    school = resolve(School)
+
+    school.register(user)
+    school.register(user2)
+
+    school.notify()
 
 if (__name__ == '__main__'):
     main()

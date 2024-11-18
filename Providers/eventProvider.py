@@ -22,7 +22,7 @@ class eventProvider (Provider):
     def remove(self, observer):
         self._observers.remove(observer)
 
-    def notify(self):
+    def notify(self, msj='Prueba'):
         for obs in self._observers:
-            obs.update('Salida')
+            obs.update(msj)
 

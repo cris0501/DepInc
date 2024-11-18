@@ -6,5 +6,5 @@ class School (eventProvider):
     def __init__(self, db: dbProvider):
         db.__init__()
 
-    def change(self):
-        self.notify("Entrada")
+    def change(self, msj):
+        self.notify(msj)

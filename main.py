@@ -1,22 +1,7 @@
-#!/bin/python
-from Models.User import User
-from Models.School import School
-from base.Container import Container as App
+from infrastructure.container import Container
+from adapters.ent.cli_adapter import CLIAdapter
 
-def main ():
-    print("Iniciando DepInc")
-    print("By Cristian R")
-    
-    app = App()
-    
-    user = app.resolve(User)
-    user2 = app.resolve(User)
-    school = app.resolve(School)
-
-    school.register(user)
-    school.register(user2)
-
-    school.change('Hora de salida')
-
-if (__name__ == '__main__'):
-    main()
+if __name__ == "__main__":
+    container = Container()
+    cli = CLIAdapter(container.flight_service)
+    cli.run()

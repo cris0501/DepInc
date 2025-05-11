@@ -1,20 +1,14 @@
 import inspect
-from app.use_cases.flight_service import FlightService
-from adapters.out.memory_flight_repository import MemoryFlightRepository
-from adapters.out.console_event_dispatcher import ConsoleEventDispatcher
+from config.providers import providers
 
 class Container:
     def __init__(self):
         self._bindings = {}
-        
         self.loadProviders()
-        
-        self.repository = MemoryFlightRepository()
-        self.dispatcher = ConsoleEventDispatcher()
-        self.flight_service = FlightService(self.repository, self.dispatcher)
     
     def loadProviders(self):
-        print("Load and register Providers!")
+        for key, implementation in providers.items():
+            self.bind(key, implementation)
         
     def bind(self, name: str, cls):
         self._bindings[name] = cls
@@ -32,7 +26,8 @@ class Container:
             param_type = param.annotation # Needed use annotations
             if param_type in self._bindings:
                 dependencies.append(self.resolve(param_type)) # Recursive resolver
-            else:
-                dependencies.append(None)  # Add none value and used default
-
+            # else:
+            #     print('None')
+            #     dependencies.append(None)  # Add none value and used default
+        
         return cls(*dependencies) # Resolve and create a instance of class

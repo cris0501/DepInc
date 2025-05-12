@@ -3,7 +3,7 @@ from adapters.ent.cli_adapter import CLIAdapter
 
 from app.use_cases.flight_service import FlightService
 
-if __name__ == "__main__":
+def execute():
     app = App()
     
     flight_service = app.resolve(FlightService)

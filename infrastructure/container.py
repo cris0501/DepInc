@@ -10,10 +10,10 @@ class Container:
         for key, implementation in providers.items():
             self.bind(key, implementation)
         
-    def bind(self, name: str, cls):
-        self._bindings[name] = cls
+    def bind(self, contract: str, cls):
+        self._bindings[contract] = cls
 
-    def resolve(self, key):
+    def resolve(self, key, _dependencies=()): # Recibe one interface/contract
         cls = self._bindings.get(key)
         if cls is None:
             raise ValueError(f"No binding for key {key}")
@@ -23,11 +23,11 @@ class Container:
 
         dependencies = []
         for param in params:
-            param_type = param.annotation # Needed use annotations
+            param_type = param.annotation # Needed to use annotations
             if param_type in self._bindings:
                 dependencies.append(self.resolve(param_type)) # Recursive resolver
             # else:
             #     print('None')
             #     dependencies.append(None)  # Add none value and used default
         
-        return cls(*dependencies) # Resolve and create a instance of class
+        return cls(*dependencies, *_dependencies) # Resolve and create a instance of class

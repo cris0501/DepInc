@@ -19,22 +19,33 @@
 .
 ├── adapters/               # Adaptadores de entrada (CLI) y salida (repositorio en memoria, dispatcher)
 ├── app/                    # Núcleo: modelos de dominio, puertos, casos de uso
-├── config/                 # (Planeado) configuración general y de providers
+├── commands/               # Comandos disponibles para el CLI
+├── config/                 # Configuración general de la app
 ├── infrastructure/         # Contenedor y configuración de dependencias
-├── main.py                 # Punto de entrada principal
+├── stubs/                  # Plantillas de archivos
+├── depinc.py               # Punto de entrada principal
 ```
 
-## Ejecución
+## Ejecuta de la app
 
 ```bash
-python main.py
+python depinc run
 ```
 
 Esto ejecuta el adaptador CLI con comandos de prueba para vuelos (crear y listar vuelos).
 
+## Comandos de ayuda
+
+```bash
+python depinc make
+```
+
+Este comando es una utilidad para crear archivos basicos que cumplen con la estructura recomendada. Ver su uso para mas detalles
+> **Nota**: Actualmente solo se pueden crear dos tipos de archivos, adaptadores de entrada o salida lo cual se indica con la bandera --ent o --out. Es importante tener en cuenta esta bandera pues de otra forma, no encontrara la plantilla puesto que todo adaptador de entrada debe contener un metodo **run** proporcionado inicialmente por el port basico del que hereda.
+
 ## Futuro del proyecto
 
-- Soporte para comandos personalizados (`depinc make:port`, `depinc make:adapter`, etc).
+- Soporte para mas comandos personalizados (`depinc make usecase`, `depinc make model`, etc).
 - Capa ORM básica con soporte a múltiples drivers (`mysql`, `sqlite`, `mongo`).
 - Sistema de eventos y observadores.
 - Modularización avanzada para proyectos grandes.

@@ -29,7 +29,7 @@
 ## Ejecuta de la app
 
 ```bash
-python depinc run
+python depinc.py run
 ```
 
 Esto ejecuta el adaptador CLI con comandos de prueba para vuelos (crear y listar vuelos).
@@ -37,14 +37,14 @@ Esto ejecuta el adaptador CLI con comandos de prueba para vuelos (crear y listar
 ## Comandos de ayuda
 
 ```bash
-python depinc make
+python depinc.py make
 ```
 
 Este comando es una utilidad para crear archivos basicos que cumplen con la estructura recomendada. Es un maker interactivo que te permite personalizar la creacion de tus componentes, incluso te permite hacer una configuracion basica de los provider que puedes inyectar de forma automatica por el contenedor.
 
 ## Futuro del proyecto
 
-- Soporte para mas comandos personalizados (`depinc make usecase`, `depinc make model`, etc).
+- Soporte para mas comandos personalizados (`depinc add adapter`, make models, etc).
 - Capa ORM básica con soporte a múltiples drivers (`mysql`, `sqlite`, `mongo`).
 - Sistema de eventos y observadores.
 - Modularización avanzada para proyectos grandes.

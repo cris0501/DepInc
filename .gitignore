@@ -22,6 +22,7 @@ config/*.secret
 *.swp
 *.swo
 *.bak
+depinc.zip
 
 # Ignorar archivos de bases de datos locales o temporales
 *.sqlite3

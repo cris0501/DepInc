@@ -1,22 +1,21 @@
 from pathlib import Path
 from config.paths import paths
+from config.providers import providers
+from commands.utils.dependency_rules import filter_providers_for
+from commands.utils.interactive import prompt_yesno, prompt_select_providers
 
-def prompt_yesno(question: str) -> bool:
-    ans = input(question + " [Y/n] > ").strip().lower()
-    return ans in ("y", "yes")
+def make_adapter(name: str):
+    is_entry = prompt_yesno("¿Tu adapter es de entrada? (Por defecto, es de salida)")
+    stub_name = "adapter_ent.stub" if is_entry else "adapter_out.stub"
+    stub_path = paths["stubs"] / stub_name
 
-def make_adapter(name):
-    stub_path = paths['stubs'] / "adapter_out.stub"
-    _type = False
-    if prompt_yesno("¿Tu adapter es de entrada? (Por defecto, es de salida)"):
-        stub_path = paths['stubs'] / "adapter_ent.stub"
-        _type = True
-    
-    file_name = name.lower() if name.endswith('adapter') else name.lower()+"_adapter"
-    file_path = paths['adapter'] / "ent" / f"{file_name}.py" if _type else paths['adapter'] / "out" / f"{file_name}.py"
-    
-    return [
-      stub_path.read_text(),
-      name.capitalize() if name.endswith("Adapter") else name.capitalize() + "Adapter",
-      file_path
-    ]
+    file_name = name.lower() if name.endswith("adapter") else name.lower() + "_adapter"
+    class_name = name.capitalize() if name.endswith("Adapter") else name.capitalize() + "Adapter"
+    file_path = paths["adapter"] / ("ent" if is_entry else "out") / f"{file_name}.py"
+
+    deps = []
+    if prompt_yesno("¿Deseas usar dependencias?"):
+        valid = filter_providers_for("adapter", providers)
+        deps = prompt_select_providers(valid)
+
+    return stub_path.read_text(), class_name, file_path, deps

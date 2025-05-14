@@ -40,8 +40,7 @@ Esto ejecuta el adaptador CLI con comandos de prueba para vuelos (crear y listar
 python depinc make
 ```
 
-Este comando es una utilidad para crear archivos basicos que cumplen con la estructura recomendada. Ver su uso para mas detalles
-> **Nota**: Actualmente solo se pueden crear dos tipos de archivos, adaptadores de entrada o salida lo cual se indica con la bandera --ent o --out. Es importante tener en cuenta esta bandera pues de otra forma, no encontrara la plantilla puesto que todo adaptador de entrada debe contener un metodo **run** proporcionado inicialmente por el port basico del que hereda.
+Este comando es una utilidad para crear archivos basicos que cumplen con la estructura recomendada. Es un maker interactivo que te permite personalizar la creacion de tus componentes, incluso te permite hacer una configuracion basica de los provider que puedes inyectar de forma automatica por el contenedor.
 
 ## Futuro del proyecto
 

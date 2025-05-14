@@ -1,20 +1,48 @@
 from pathlib import Path
 from config.paths import paths
+from commands.utils.use_case import make_use_case
+from commands.utils.adapter import make_adapter
+from config.providers import providers
 
-def load_stub(kind: str, _type=None):
-    if _type and _type == 'ent':
-        stub_path = Path(__file__).parent.parent / "stubs" / f"{kind}_ent.stub"
-    elif _type and _type == 'out':
-        stub_path = Path(__file__).parent.parent / "stubs" / f"{kind}_out.stub"
-    else:
-      stub_path = Path(__file__).parent.parent / "stubs" / f"{kind}.stub"
-    
-    if not stub_path.exists():
-        raise FileNotFoundError(f"No stub encontrado para '{kind}' en {stub_path}")
-    return stub_path.read_text()
+TYPES = ['Adapter', 'UseCase']
 
-def interpolate_stub(stub: str, class_name: str):
-    return stub.replace("__class_name__", class_name)
+def prompt_yesno(question: str) -> bool:
+    ans = input(question + " [Y/n] > ").strip().lower()
+    return ans in ("y", "yes")
+
+def prompt_select_providers(providers):
+    keys = list(providers.keys())
+    print("\nSelecciona las dependencias a inyectar (separa por coma):")
+    for i, key in enumerate(keys, 1):
+        print(f"[{i}] {key.__name__}")
+    indexes = input("> ").strip().split(",")
+    selected = []
+    for idx in indexes:
+        try:
+            key = keys[int(idx.strip()) - 1]
+            dep = providers[key]
+            dep["__class__"] = key
+            selected.append(dep)
+        except:
+            continue
+    return selected
+
+def generate_code(stub, class_name, deps):
+    import_lines = "\n".join([
+        f"from {d['path']} import {d['__class__'].__name__}"
+        for d in deps
+    ]) or ""
+
+    constructor_args = ", ".join([
+        f"{d['__class__'].__name__[0].lower() + d['__class__'].__name__[1:]}: {d['__class__'].__name__}"
+        for d in deps
+    ]) or ""
+
+    stub = stub.replace("__imports__", import_lines)
+    stub = stub.replace("__deps__", constructor_args)
+    stub = stub.replace("__class_name__", class_name)
+
+    return stub
 
 def write_file(path: Path, content: str, force: bool = False):
     if path.exists() and not force:
@@ -24,45 +52,21 @@ def write_file(path: Path, content: str, force: bool = False):
     print(f"[✓] Archivo creado: {path}")
     return True
 
-def update_init(directory: Path, class_name: str, file_name: str):
-    init_file = directory / "__init__.py"
-    import_line = f"from .{file_name[:-3]} import {class_name}"
-    if init_file.exists():
-        lines = init_file.read_text().splitlines()
-        if import_line in lines:
-            print(f"[i] El archivo __init__.py ya incluye la clase {class_name}.")
-            return
-    else:
-        lines = []
-    lines.append(import_line)
-    init_file.write_text("\n".join(lines) + "\n")
-    print(f"[✓] Actualizado: {init_file}")
+def execute():
+    print("\nQué tipo de archivo quieres crear:")
+    for i, item in enumerate(TYPES, 1):
+        print(f"[{i}] {item}")
+    type_file = int(input("> ")) - 1
+    name_type = TYPES[type_file].lower()
 
-def execute(args):
-    suffix = args.type.capitalize()
-    class_name = args.name.capitalize() if args.name.endswith(suffix) else args.name.capitalize() + suffix
-  
-    file_name = args.name if args.name.endswith(args.type) else args.name + f"_{args.type}"
-    
-    type_stub = None
-    if args.ent:
-        type_stub = 'ent'
-    elif args.out:
-        type_stub = 'out'
+    print(f"\nNombre del {name_type}:")
+    name = input("> ").lower()
 
-    try:
-        stub = load_stub(args.type, type_stub)
-    except FileNotFoundError as e:
-        print(f"[x] {e}")
-        return
+    deps = []
+    if prompt_yesno("¿Deseas usar dependencias?"):
+        deps = prompt_select_providers(providers)
 
-    content = interpolate_stub(stub, class_name)
+    stub, class_name, file_path = make_adapter(name) if (type_file == 0) else make_use_case(name)
+    stub = generate_code(stub, class_name, deps)
 
-    output_dir = paths.get(args.type)
-    output_dir = output_dir / "ent" if args.ent else output_dir / "out"
-    
-    output_dir.mkdir(parents=True, exist_ok=True)
-    file_path = output_dir / f"{file_name}.py"
-
-    if write_file(file_path, content, args.force) and args.register:
-        update_init(output_dir, class_name, file_path.name)
+    write_file(file_path, stub)

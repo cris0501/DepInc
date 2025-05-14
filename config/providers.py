@@ -5,7 +5,16 @@ from app.ports.out.flight_repository import FlightRepository
 from app.ports.out.event_dispatcher import EventDispatcher
 
 providers = {
-        FlightService: FlightService,
-        FlightRepository: MemoryFlightRepository,
-        EventDispatcher: ConsoleEventDispatcher,
+        FlightService: {
+            'imp': FlightService,
+            'path': 'app.use_cases.flight_service',
+        },
+        FlightRepository: {
+            'imp': MemoryFlightRepository,
+            'path': 'adapters.out.memory_flight_repository',
+        },
+        EventDispatcher: {
+            'imp': ConsoleEventDispatcher,
+            'path': 'adapters.out.console_event_dispatcher',
+        },
 }

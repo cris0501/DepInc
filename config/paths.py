@@ -7,6 +7,6 @@ project_root = Path(__file__).parent.parent.resolve()
 paths = {
     "root": project_root,
     "adapter": project_root / "adapters",
-    "usecase": project_root / "app" / "usecases",
+    "use_case": project_root / "app" / "use_cases",
     "stubs": project_root / "stubs"
 }

@@ -1,0 +1,6 @@
+__imports__
+
+# ToDo: Add port if this exists | port of basic service
+class __class_name__():
+    def __init__(self, __deps__):
+        pass

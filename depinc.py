@@ -1,30 +1,21 @@
-import argparse
+import sys
 from commands import make, run
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog="depinc")
-    subparsers = parser.add_subparsers(dest="command")
+def main():
+    if len(sys.argv) < 2:
+        print("Uso: python depinc.py [make|run]")
+        return
 
-    # make command
-    make_parser = subparsers.add_parser("make", help="Artefacts generator")
-    make_parser.add_argument("type", choices=["adapter"])
-    make_parser.add_argument("--ent", action="store_true")
-    make_parser.add_argument("--out", action="store_true")
-    make_parser.add_argument("-d", "--dir", default="generated")
-    make_parser.add_argument("--force", action="store_true")
-    make_parser.add_argument("--register", action="store_true")
-    make_parser.add_argument("name")
+    command = sys.argv[1].lower()
 
-    # run command
-    run_parser = subparsers.add_parser("run", help="Ejecuta el adaptador configurado")
-    run_parser.add_argument("--adapter", choices=["http", "cli"], default="http")
-
-    args = parser.parse_args()
-
-    match args.command:
+    match command:
         case "make":
-            make.execute(args)
+            make.execute()
         case "run":
             run.execute()
         case _:
-            parser.print_help()
+            print(f"Comando desconocido: {command}")
+            print("Comandos disponibles: make, run")
+
+if __name__ == "__main__":
+    main()

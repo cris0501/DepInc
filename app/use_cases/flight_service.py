@@ -1,9 +1,8 @@
-from app.ports.ent.flight_command import FlightCommand
 from app.ports.out.flight_repository import FlightRepository
 from app.ports.out.event_dispatcher import EventDispatcher
 from app.domain.models.flight import Flight
 
-class FlightService(FlightCommand):
+class FlightService():
     def __init__(self, repository: FlightRepository, dispatcher: EventDispatcher):
         self.repository = repository
         self.dispatcher = dispatcher

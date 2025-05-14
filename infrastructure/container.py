@@ -7,8 +7,8 @@ class Container:
         self.loadProviders()
     
     def loadProviders(self):
-        for key, implementation in providers.items():
-            self.bind(key, implementation)
+        for key, item in providers.items():
+            self.bind(key, item['imp'])
         
     def bind(self, contract: str, cls):
         self._bindings[contract] = cls

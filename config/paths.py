@@ -8,5 +8,6 @@ paths = {
     "root": project_root,
     "adapter": project_root / "adapters",
     "use_case": project_root / "app" / "use_cases",
+    "models": project_root / "app" / "domain" / "models",
     "stubs": project_root / "stubs"
 }

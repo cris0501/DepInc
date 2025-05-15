@@ -40,11 +40,24 @@ Esto ejecuta el adaptador CLI con comandos de prueba para vuelos (crear y listar
 python depinc.py make
 ```
 
-Este comando es una utilidad para crear archivos basicos que cumplen con la estructura recomendada. Es un maker interactivo que te permite personalizar la creacion de tus componentes, incluso te permite hacer una configuracion basica de los provider que puedes inyectar de forma automatica por el contenedor.
+Este comando es una utilidad para crear archivos basicos que cumplen con la estructura recomendada. Es un maker interactivo que te permite personalizar la creacion de tus componentes, incluso te permite hacer una configuracion basica de los provider que puedes inyectar de forma automatica por el contenedor. Este maker nos permite creear:
+
+- Modelos
+- Casos de uso
+- Adaptadores
+
+## Modelos
+
+Todo modelo hereda de una clase base **model.py** el cual contiene la logica del control interno de estado. Se usan atributos internos y la modificacion de metodos magicos para controlar el estado del modelo. Esto permite:
+
+- Conocer los atributos originales durante la creacion del modelo.
+- Conocer los atributos que han sido modificados para optimizar las peticiones del repositorio.
+- Mantiene un control interno de cuales son los atributos que seran almacenados por el repositorio (**fillables**).
+- Marcar nuevos atributos, dinamicos o generados durante ejecucion, para ser almacenados.
 
 ## Futuro del proyecto
 
-- Soporte para mas comandos personalizados (`depinc add adapter`, make models, etc).
+- Soporte para mas comandos personalizados (`depinc add adapter`, etc).
 - Capa ORM básica con soporte a múltiples drivers (`mysql`, `sqlite`, `mongo`).
 - Sistema de eventos y observadores.
 - Modularización avanzada para proyectos grandes.

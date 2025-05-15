@@ -1,5 +1,5 @@
-class Flight:
-    def __init__(self, flight_id: str, destination: str, pilot: str = None):
-        self.flight_id = flight_id
-        self.destination = destination
-        self.pilot = pilot
+from app.domain.models.model import Model
+
+class Flight(Model):
+    def __init__(self, _id: str, destination: str, pilot: str = None):
+        super().__init__(id=_id, destination=destination, pilot=pilot) # Set init attributes

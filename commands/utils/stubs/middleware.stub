@@ -1,0 +1,2 @@
+def __class_name__():
+    return True

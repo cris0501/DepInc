@@ -6,8 +6,9 @@ project_root = Path(__file__).parent.parent.resolve()
 # Directorios estándar
 paths = {
     "root": project_root,
-    "adapter": project_root / "adapters",
-    "use_case": project_root / "app" / "use_cases",
-    "models": project_root / "app" / "domain" / "models",
-    "stubs": project_root / "stubs"
+    "adapters": project_root / "adapters",
+    "use_cases": project_root / "core" / "use_cases",
+    "models": project_root / "core" / "domain" / "models",
+    "middlewares": project_root / "infrastructure" / "middlewares",
+    "stubs": project_root / "commands" / "utils" / "stubs"
 }

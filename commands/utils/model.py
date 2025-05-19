@@ -1,7 +1,5 @@
 from pathlib import Path
 from config.paths import paths
-from config.providers import providers
-from commands.utils.dependency_rules import filter_providers_for
 from commands.utils.interactive import prompt_yesno, prompt_select_providers
 
 def make_model(name: str):

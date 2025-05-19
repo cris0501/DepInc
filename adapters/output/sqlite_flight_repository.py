@@ -1,11 +1,14 @@
 import sqlite3
-from app.ports.out.repository import Repository
-from app.domain.models.flight import Flight
+from core.ports.output.repository import Repository
+from core.domain.models.flight import Flight
+from infrastructure.decorators import inyectable
 
+@inyectable(key=Repository, variant='sqlite')
 class SQLiteFlightRepository(Repository):
-    def __init__(self, db_path: str):
-        self.conn = sqlite3.connect(db_path)
-        self._ensure_table()
+    def __init__(self):#, db_path: str):
+        #self.conn = sqlite3.connect(db_path)
+        #self._ensure_table()
+        print('Load SQLite')
 
     def _ensure_table(self):
         self.conn.execute("""

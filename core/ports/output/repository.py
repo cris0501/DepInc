@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from infrastructure.decorators import inyectable
 
 class Repository(ABC):
     @abstractmethod

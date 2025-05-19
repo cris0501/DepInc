@@ -1,4 +1,4 @@
-from app.domain.models.model import Model
+from core.domain.models.model import Model
 
 class Pilot(Model):
     def __init__(self, name: str):

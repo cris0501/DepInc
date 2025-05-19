@@ -1,3 +1,7 @@
+# Basic imports
+from infrastructure.middlewares import middleware
+
+# Dev dependencies
 __imports__
 
 # ToDo: Add port if this exists | port of basic service

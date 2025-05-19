@@ -1,4 +1,4 @@
-from app.ports.ent.adapters_interface import InputAdapter
+from core.ports.input.adapters_interface import InputAdapter
 
 class __class_name__(InputAdapter):
     def __init__(self):

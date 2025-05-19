@@ -1,4 +1,4 @@
-from app.domain.models.model import Model
+from core.domain.models.model import Model
 
 class Flight(Model):
     def __init__(self, _id: str, destination: str, pilot: str = None):

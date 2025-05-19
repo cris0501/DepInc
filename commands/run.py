@@ -1,12 +1,15 @@
-from infrastructure.container import Container as App
-from adapters.ent.cli_adapter import CLIAdapter
+from infrastructure import App
+from adapters import CLIAdapter, ConsoleEventDispatcher, MemoryFlightRepository, SQLiteFlightRepository
+from config.paths import paths
 
-from app.use_cases.flight_service import FlightService
+from core.use_cases.flight_service import FlightService
+from adapters import *
 
 def execute():
+  
     app = App()
     
-    flight_service = app.resolve(FlightService)
+    flight_service = app.resolve(FlightService, {'repository': 'memory'})
     cli = CLIAdapter(flight_service)
     
     cli.run()

@@ -1,4 +1,4 @@
-from app.ports.ent.adapters_interface import InputAdapter
+from core.ports.input.adapters_interface import InputAdapter
 
 class CLIAdapter(InputAdapter):
     def __init__(self, flight_service):

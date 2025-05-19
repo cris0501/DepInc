@@ -1,4 +1,4 @@
-from app.domain.models.model import Model
+from core.domain.models.model import Model
 
 class __class_name__(Model):
     def __init__(self,**kargs): # Change input dicc to specified values recibed

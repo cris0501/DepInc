@@ -1,5 +1,5 @@
 import inspect, importlib, pkgutil
-
+from config.providers import default_providers
 from infrastructure.decorators.inyectable import INJECTABLES, INJECTABLE_ALIASES
 
 class Container:
@@ -12,8 +12,15 @@ class Container:
         self._bindings[key] = provider
     
     def auto_register(self):
+        # Default load
+        for key, cls in default_providers.items():
+            self.register(key, cls)
+        
+        # Overwrite class
         for key, cls in INJECTABLES.items():
             self.register(key, cls)
+        
+        # Variants
         for key, cls in INJECTABLE_ALIASES.items():
             self.register(key, cls)
 

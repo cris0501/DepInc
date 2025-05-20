@@ -3,15 +3,16 @@ from config.paths import paths
 from commands.utils.interactive import prompt_yesno, prompt_select_providers
 
 def make_middleware(name: str):
+    class_name = name.capitalize() if name.lower().endswith("middleware") else name.capitalize() + "Middleware"
     stub_path = paths["stubs"] / "middleware.stub"
 
-    file_path = paths["middlewares"] /  f"{name.lower()}.py"
+    file_path = paths["middlewares"] /  f"{name.lower()}_middleware.py"
 
     deps = []
     
     # registrar_middleware(name.lower())
 
-    return stub_path.read_text(), name, file_path, deps
+    return stub_path.read_text(), class_name, file_path, deps
 
 def registrar_middleware(_name: str):
     init_path = "infrastructure/middlewares/__init__.py"

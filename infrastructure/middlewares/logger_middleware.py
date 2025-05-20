@@ -1,8 +1,8 @@
 from .middleware import Middleware
 
-class __class_name__ (Middleware):
+class LoggerMiddleware (Middleware):
     __type__ = "input"
     
     def execute (self, ctx):
-        print("New middleware check...")
+        print("Logger...")
         return True

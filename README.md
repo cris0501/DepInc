@@ -21,10 +21,13 @@
 ├── commands/               # Comandos disponibles para el CLI
     ├── utils/stubs/        # Plantillas de archivos
 ├── config/                 # Configuración general de la app
-├── core/                    # Núcleo: modelos de dominio, puertos, casos de uso
+    ├── paths               # Listado de rutas accesibles por la app
+    ├── providers           # Listado inicial de dependencias inyectables
+├── core/                   # Núcleo: modelos de dominio, puertos, casos de uso
 ├── infrastructure/         # Contenedor y configuración de dependencias
     ├── container/          # Contenedor general de la APP
     ├── decorators/         # Decoradores que agregan funcionalidad
+    ├── middlewares/        # Listado de middlewares disponibles
 ├── depinc.py               # Punto de entrada principal
 ```
 
@@ -51,18 +54,17 @@ Este comando es una utilidad para crear archivos basicos que cumplen con la estr
 
 ## Contenedor
 
-El contenedor principal es el encargado de cargar los providers, services y el resto de clases marcadas para ser inyectables. Resuelve dependencias anidadas y permite la sobre escritura de dependencias. Esta lectura de dependencias **tendá** un mecanismo dual.
-
-**En proximos commits**: Esto es, a traves de un listado podemos indicarle cuales seran las dependencias estaticas, clases que siempre estaran disponibles para ser inyectables. Aqui, DepInC incluye clases basicas, las cuales son remplazables por el desarrollador. Para ello, se usa el decorador **@inyectable()**, del cual se hara una seccion.
+El contenedor principal es el encargado de cargar los providers, services y el resto de clases marcadas para ser inyectables. Resuelve dependencias anidadas y permite la sobre escritura de dependencias. Esta lectura de dependencias usa un mecanismo dual. Esto es, a traves de un listado podemos indicarle cuales seran las dependencias estaticas, clases que siempre estaran disponibles para ser inyectables. Aqui, DepInC incluye clases basicas, las cuales son remplazables por el desarrollador. Para ello, se usa el decorador **@inyectable()** (del cual se hara una seccion), al usarlo, podemos sobre escribir la clase asociada a una key, la cual, se recomienda sea el port del que heredan, lo cual lo hace mas dinamico.
 
 ## Dependencias
+
 Para saber que dependencias puede inyectar el contenedor, se puede marcar cualquier clase con el decorador **@inyectable()**, este decorador le indica al contenedor que la clase sera disponible para resolver de forma dinamica. Es importante mencionar que las dependencias del mismo estaran indicadas en el constructor de la clase como parametros, no en el cuerpo del mismo.
 
 De igual forma, se proverá de un listado basico en la carpeta de configuraciones donde se listan las clases que estaran disponibles siempre, sin la necesidad de que estas incluyan el decorador en su definicion. Es un mecanismo poderoso que permite una dualidad dando preferencia a las clases marcadas por el decorador de forma explicita por el desarrollador. Sin embargo, para evitar coliciones y permitir la inyectabilidad de una o mas clases del mismo tipo (repositorios por ejemplo), el decorador permite hacer uso de variantes mediante el parametro **variant**.
 
 ```python
-from core.ports.output.repository import Repository
-from infrastructure import inyectable
+from core.ports.output.repository import Repository # <-- Port
+from infrastructure import inyectable # <-- decorador
 
 @inyectable(key=Repository, variant='sqlite')
 class SQLiteFlightRepository(Repository):
@@ -99,15 +101,18 @@ Aqui se define la logica de un caso de uso (un proceso que nuestra app llevara a
 
 ## Middlewares
 
-Un Middleware es una funcion que se ejecuta antes o despues de una funcion y tiene la capacidad de modificar el funcionamiento de la misma, inclusive denegar su ejecucion. Este tipo de elementos son muy utiles, principalemte para hacer validaciones y permitir ejecutar ciertas acciones. Estas funciones son invocadas mediante un decorador creado para la facilidad de uso. Cuando se crea un caso de uso, este ya incluye la importacion del decorador **@middleware**. Este decorador ejecutara los middlewares en la lista que recibe como parametros. Para un caso de uso, estos se ejecutan antes del metodo que se invoca, esto ya que un middleware se ejecuta antes o despues del caso de uso y puesto que el caso de uso no tiene el deber de interacturar con la respuesta del adaptador (como escribir en db, crear respuesta json, etc), los middlewares se ejecutan antes del metodo invocado del servicio.
+Un Middleware es una funcion que se ejecuta antes o despues de una funcion y tiene la capacidad de modificar el funcionamiento de la misma, inclusive denegar su ejecucion. Este tipo de elementos son muy utiles, principalemte para hacer validaciones y permitir ejecutar ciertas acciones. Estas funciones son invocadas mediante un decorador creado para la facilidad de uso. Cuando se crea un caso de uso, este ya incluye la importacion del decorador **@middleware**. 
 
-Se pueden crear middlewares mediante el maker que ofrece **depinc**. Ademas, estos se registran automaticamente en el modulo para que su importacion sea de lo mas sencilla.
+Este decorador ejecutara los middlewares que recibe como parametro. Para un caso de uso, estos se ejecutan antes del metodo que se invoca, esto ya que un middleware se ejecuta antes o despues del caso de uso y puesto que el caso de uso no tiene el deber de interacturar con la respuesta del adaptador (como escribir en db, crear respuesta json, etc), los middlewares se ejecutan antes del metodo invocado del servicio.
+
+Se pueden crear middlewares mediante el maker que ofrece **depinc**.
 
 ```python
-from infrastructure.middlewares import middleware, new_middleware
+from infrastructure import middleware # <-- decorador
+from infrastructure.middlewares import AuthMiddleware # <-- Middleware
 
 class Service():
-    @middleware([new_middleware])
+    @middleware([AuthMiddleware])
     def use_method (self, deps):
         ...
 ```

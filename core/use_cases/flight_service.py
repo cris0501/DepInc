@@ -2,8 +2,8 @@ from core.ports.output.repository import Repository
 from core.ports.output.event_dispatcher import EventDispatcher
 from core.domain.models.flight import Flight
 
-from infrastructure.middlewares import middleware, auth, exists
-from infrastructure.decorators import inyectable
+from infrastructure import middleware, inyectable
+from infrastructure.middlewares import AuthMiddleware, ExistsMiddleware
 
 @inyectable()
 class FlightService():
@@ -11,13 +11,13 @@ class FlightService():
         self.repository = repository
         self.dispatcher = dispatcher
 
-    @middleware([auth])
+    @middleware([AuthMiddleware])
     def register_flight(self, flight_id: str, destination: str):
         flight = Flight(flight_id, destination)
         self.repository.save(flight)
         self.dispatcher.dispatch("FlightRegistered", {"flight_id": flight_id, "destination": destination})
 
-    @middleware([exists])
+    @middleware([ExistsMiddleware])
     def assign_pilot(self, flight_id: str, pilot_name: str):
         flight = self.repository.find_by_id(flight_id)
         if flight:

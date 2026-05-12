@@ -14,24 +14,34 @@ class Container:
             self.register(key, cls)
 
     def resolve(self, key):
-        cls = self._bindings.get(key)
+        self._validate(key)
+        return self._build(key)
 
-        if cls is None:
-            raise ValueError(f"No binding for {key}")
+    def _validate(self, key, chain=None):
+        chain = chain or set()
+
+        if key in chain:
+            raise ValueError(f"Dependencia circular detectada: {key.__name__}")
+
+        cls = self._bindings.get(key, key)
+
+        if inspect.isabstract(cls):
+            raise ValueError(f"'{cls.__name__}' es abstracta y no tiene binding registrado")
 
         sig = inspect.signature(cls.__init__)
-        params = list(sig.parameters.values())[1:]
-
-        resolved_args = []
-        for param in params:
+        for param in list(sig.parameters.values())[1:]:
             if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
                 continue
+            if param.annotation is inspect.Parameter.empty:
+                raise ValueError(f"'{param.name}' en {cls.__name__} no tiene anotación de tipo")
+            self._validate(param.annotation, chain | {key})
 
-            param_type = param.annotation
-
-            if param_type in self._bindings:
-                resolved_args.append(self.resolve(param_type))
-            else:
-                raise ValueError(f"No se pudo resolver '{param.name}' en {cls.__name__}")
-
-        return cls(*resolved_args)
+    def _build(self, key):
+        cls = self._bindings.get(key, key)
+        sig = inspect.signature(cls.__init__)
+        args = []
+        for param in list(sig.parameters.values())[1:]:
+            if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+                continue
+            args.append(self._build(param.annotation))
+        return cls(*args)

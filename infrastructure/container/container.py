@@ -1,5 +1,5 @@
 import inspect
-from config.providers import default_providers
+from config.bindings import bindings
 
 class Container:
     def __init__(self):
@@ -10,7 +10,7 @@ class Container:
         self._bindings[key] = provider
 
     def auto_register(self):
-        for key, cls in default_providers.items():
+        for key, cls in bindings.items():
             self.register(key, cls)
 
     def resolve(self, key):

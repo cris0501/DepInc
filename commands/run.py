@@ -9,7 +9,7 @@ def execute():
   
     app = App()
     
-    flight_service = app.resolve(FlightService, {'repository': 'memory'})
+    flight_service = app.resolve(FlightService)
     cli = CLIAdapter(flight_service)
     
     cli.run()

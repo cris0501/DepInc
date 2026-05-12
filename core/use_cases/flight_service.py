@@ -2,10 +2,9 @@ from core.ports.output.repository import Repository
 from core.ports.output.event_dispatcher import EventDispatcher
 from core.domain.models.flight import Flight
 
-from infrastructure import middleware, inyectable
+from infrastructure import middleware
 from infrastructure.middlewares import AuthMiddleware, ExistsMiddleware
 
-@inyectable()
 class FlightService():
     def __init__(self, repository: Repository, dispatcher: EventDispatcher):
         self.repository = repository

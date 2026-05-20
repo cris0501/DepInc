@@ -1,5 +1,5 @@
 from infrastructure import App
-from adapters import CLIAdapter, ConsoleEventDispatcher, MemoryFlightRepository, SQLiteFlightRepository
+from adapters import CLIAdapter
 from config.paths import paths
 
 from core.use_cases.flight_service import FlightService

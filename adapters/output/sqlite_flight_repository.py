@@ -36,7 +36,5 @@ class SQLiteFlightRepository(Repository):
         cursor.execute("SELECT id, destination, pilot FROM flights WHERE id = ?", (id_value,))
         row = cursor.fetchone()
         if row:
-            flight = Flight(_id=row[0], destination=row[1], pilot=row[2])
-            flight.sync_original()
-            return flight
+            return Flight.from_persistence(_id=row[0], destination=row[1], pilot=row[2])
         return None

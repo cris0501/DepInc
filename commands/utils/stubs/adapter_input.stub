@@ -1,6 +1,4 @@
-from core.ports.input.adapters_interface import InputAdapter
-
-class __class_name__(InputAdapter):
+class __class_name__:
     def __init__(self):
         pass
 

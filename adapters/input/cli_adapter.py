@@ -1,7 +1,7 @@
-from core.ports.input.adapters_interface import InputAdapter
+from core.ports.input.flight_service_port import FlightServicePort
 
-class CLIAdapter(InputAdapter):
-    def __init__(self, flight_service):
+class CLIAdapter:
+    def __init__(self, flight_service: FlightServicePort):
         self.flight_service = flight_service
 
     def run(self):

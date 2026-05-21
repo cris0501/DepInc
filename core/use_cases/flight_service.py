@@ -1,3 +1,4 @@
+from core.ports.input.flight_service_port import FlightServicePort
 from core.ports.output.repository import Repository
 from core.ports.output.event_dispatcher import EventDispatcher
 from core.domain.models.flight import Flight
@@ -5,7 +6,7 @@ from core.domain.models.flight import Flight
 from infrastructure import middleware
 from infrastructure.middlewares import AuthMiddleware, ExistsMiddleware
 
-class FlightService():
+class FlightService(FlightServicePort):
     def __init__(self, repository: Repository, dispatcher: EventDispatcher):
         self.repository = repository
         self.dispatcher = dispatcher

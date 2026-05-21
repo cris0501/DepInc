@@ -1,15 +1,10 @@
-from infrastructure import App
-from adapters import CLIAdapter
-from config.paths import paths
+from depinc import App
+from app.adapters.input.cli_adapter import CLIAdapter
+from app.use_cases.flight_service import FlightService
 
-from core.use_cases.flight_service import FlightService
-from adapters import *
 
 def execute():
-  
     app = App()
-    
     flight_service = app.resolve(FlightService)
     cli = CLIAdapter(flight_service)
-    
     cli.run()

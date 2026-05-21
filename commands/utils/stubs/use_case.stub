@@ -1,5 +1,5 @@
 # Basic imports
-from infrastructure.middlewares import middleware
+from depinc import middleware
 
 # Dev dependencies
 __imports__

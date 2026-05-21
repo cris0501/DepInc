@@ -1,5 +1,5 @@
-from core.domain.models.model import Model
+from depinc import Model
 
 class __class_name__(Model):
-    def __init__(self,**kargs): # Change input dicc to specified values recibed
-        super().__init__(**kargs) # Set init attributes
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)

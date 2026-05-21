@@ -6,9 +6,7 @@ class Model:
         super().__setattr__('_fillable', set(kwargs.keys()))
 
         for k, v in kwargs.items():
-            """ Create a base model attributes """
-            self._attributes[k] = v # All attributes
-            self._original[k] = v # Original values
+            self._attributes[k] = v
 
     def __getattr__(self, name):
         """ Use to obj.attr """

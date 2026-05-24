@@ -7,3 +7,4 @@ bindings = {
     Repository: SQLiteFlightRepository,
     EventDispatcher: ConsoleEventDispatcher,
 }
+

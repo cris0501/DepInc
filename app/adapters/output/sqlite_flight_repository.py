@@ -1,6 +1,5 @@
 import sqlite3
 from app.ports.output.repository import Repository
-from app.domain.flight import Flight
 from config.paths import paths
 
 
@@ -19,23 +18,32 @@ class SQLiteFlightRepository(Repository):
         """)
         self.conn.commit()
 
-    def save(self, flight: Flight):
-        changes = flight.get_dirty()
-        if not changes:
-            return
-
-        self.conn.execute(
-            "INSERT INTO flights (id, destination, pilot) VALUES (:id, :destination, :pilot) "
-            "ON CONFLICT(id) DO UPDATE SET destination=excluded.destination, pilot=excluded.pilot",
-            {"id": flight.id, "destination": flight.destination, "pilot": flight.pilot}
-        )
+    def save(self, entity):
+        if entity._exists:
+            changes = entity.get_dirty()
+            if not changes:
+                return
+            set_clause = ', '.join(f'{k} = :{k}' for k in changes)
+            self.conn.execute(
+                f"UPDATE flights SET {set_clause} WHERE id = :id",
+                {**changes, 'id': entity.id}
+            )
+        else:
+            data = entity.to_dict()
+            columns = ', '.join(data)
+            placeholders = ', '.join(f':{k}' for k in data)
+            self.conn.execute(
+                f"INSERT INTO flights ({columns}) VALUES ({placeholders})",
+                data
+            )
         self.conn.commit()
-        flight.sync_original()
+        entity.sync_original()
 
-    def find_by_id(self, id_value):
+    def find_by_id(self, model_class, id_value):
         cursor = self.conn.cursor()
         cursor.execute("SELECT id, destination, pilot FROM flights WHERE id = ?", (id_value,))
         row = cursor.fetchone()
         if row:
-            return Flight.from_persistence(_id=row[0], destination=row[1], pilot=row[2])
+            columns = [desc[0] for desc in cursor.description]
+            return model_class.from_persistence(**dict(zip(columns, row)))
         return None

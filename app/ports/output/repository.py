@@ -7,5 +7,5 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def find_by_id(self, id_value):
+    def find_by_id(self, model_class, id_value):
         pass

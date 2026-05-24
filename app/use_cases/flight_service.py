@@ -20,7 +20,7 @@ class FlightService(FlightServicePort):
 
     @middleware([ExistsMiddleware])
     def assign_pilot(self, flight_id: str, pilot_name: str):
-        flight = self.repository.find_by_id(flight_id)
+        flight = self.repository.find_by_id(Flight, flight_id)
         if flight:
             flight.pilot = pilot_name
             self.repository.save(flight)

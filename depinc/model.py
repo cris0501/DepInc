@@ -3,6 +3,7 @@ class Model:
         super().__setattr__('_attributes', {})
         super().__setattr__('_dirty', set())
         super().__setattr__('_fillable', set(kwargs.keys()))
+        super().__setattr__('_exists', False)
 
         for k, v in kwargs.items():
             self._attributes[k] = v
@@ -12,6 +13,7 @@ class Model:
     def from_persistence(cls, **kwargs):
         instance = cls(**kwargs)
         instance._dirty.clear()
+        object.__setattr__(instance, '_exists', True)
         return instance
 
     def __getattr__(self, name):
@@ -36,6 +38,7 @@ class Model:
 
     def sync_original(self):
         self._dirty.clear()
+        object.__setattr__(self, '_exists', True)
 
     def allow(self, *fields):
         self._fillable.update(fields)

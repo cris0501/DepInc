@@ -24,6 +24,9 @@ class Container:
             return overrides
 
         result = {}
+        if inspect.isclass(overrides):
+            overrides = [overrides]
+
         for cls in overrides:
             registered_bases = [b for b in cls.__bases__ if b in self._bindings]
             if not registered_bases:

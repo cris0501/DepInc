@@ -1,4 +1,7 @@
 class Model:
+    _table = None
+    _db = 'id'
+
     def __init__(self, **kwargs):
         super().__setattr__('_attributes', {})
         super().__setattr__('_dirty', set())

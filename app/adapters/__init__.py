@@ -1,4 +1,4 @@
 from .input.cli_adapter import CLIAdapter
 from .output.console_event_dispatcher import ConsoleEventDispatcher
 from .output.memory_flight_repository import MemoryFlightRepository
-from .output.sqlite_flight_repository import SQLiteFlightRepository
+from .output.sqlite_repository import SQLiteRepository

@@ -1,22 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class Middleware(ABC):
-    @abstractmethod
-    def execute(self, ctx: dict) -> bool:
+    def before(self, ctx: dict) -> bool:
+        return True
+
+    def after(self, ctx: dict, result):
         pass
 
 
-def middleware(middlewares):
-    def decorator(func):
-        def wrapper(self, *args, **kwargs):
-            ctx = {"args": args, "kwargs": kwargs, "self": self}
-            for mw in middlewares:
-                instance = mw() if isinstance(mw, type) else mw
-                passed = instance.execute(ctx)
-                if not passed:
-                    print(f"[Middleware bloqueado]: {instance.__class__.__name__}")
-                    return
-            return func(self, *args, **kwargs)
-        return wrapper
-    return decorator
+def apply(middlewares: list, method):
+    def wrapper(*args, **kwargs):
+        ctx = {"args": args, "kwargs": kwargs}
+        for mw in middlewares:
+            if not mw().before(ctx):
+                print(f"[Middleware bloqueado]: {mw.__name__}")
+                return
+        result = method(*args, **kwargs)
+        for mw in middlewares:
+            mw().after(ctx, result)
+        return result
+    return wrapper

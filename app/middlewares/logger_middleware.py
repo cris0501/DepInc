@@ -2,8 +2,5 @@ from depinc import Middleware
 
 
 class LoggerMiddleware(Middleware):
-    __type__ = "input"
-
-    def execute(self, ctx):
-        print("Logger...")
-        return True
+    def after(self, ctx, result):
+        print(f"[Log] llamada completada, resultado: {result}")

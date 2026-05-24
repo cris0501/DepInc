@@ -1,9 +1,11 @@
 import inspect
+from depinc.middleware import apply
 
 
 class Container:
     def __init__(self):
         self._bindings = {}
+        self._middlewares = {}
         self.auto_register()
 
     def register(self, key, provider):
@@ -13,6 +15,12 @@ class Container:
         from config.bindings import bindings
         for key, cls in bindings.items():
             self.register(key, cls)
+
+        try:
+            from config.middlewares import middlewares
+            self._middlewares = middlewares
+        except ImportError:
+            pass
 
     def resolve(self, key, overrides=None):
         override_map = self._normalize_overrides(overrides) if overrides else {}
@@ -71,4 +79,14 @@ class Container:
             if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
                 continue
             args.append(self._build(param.annotation, override_map))
-        return cls(*args)
+        instance = cls(*args)
+        self._apply_middlewares(key, instance)
+        return instance
+
+    def _apply_middlewares(self, key, instance):
+        method_map = self._middlewares.get(key)
+        if not method_map:
+            return
+        for method_name, mws in method_map.items():
+            original = getattr(instance, method_name)
+            setattr(instance, method_name, apply(mws, original))

@@ -2,8 +2,6 @@ from depinc import Middleware
 
 
 class AuthMiddleware(Middleware):
-    __type__ = "input"
-
-    def execute(self, ctx):
+    def before(self, ctx) -> bool:
         print("Auth check...")
         return True

@@ -2,8 +2,6 @@ from depinc import Middleware
 
 
 class ExistsMiddleware(Middleware):
-    __type__ = "input"
-
-    def execute(self, ctx):
+    def before(self, ctx) -> bool:
         print("Exists check...")
         return True

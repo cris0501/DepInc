@@ -1,6 +1,6 @@
 class Model:
     _table = None
-    _db = 'mysql'
+    _pk = 'id'
 
     def __init__(self, **kwargs):
         super().__setattr__('_attributes', {})

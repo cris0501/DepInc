@@ -7,10 +7,21 @@ class SQLiteRepository(Repository):
     def __init__(self):
         print("Starting sqlite repository")
         self.conn = sqlite3.connect(paths['root'] / 'database.db')
+        self._migrate()
+
+    def _migrate(self):
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS flights (
+                id TEXT PRIMARY KEY,
+                destination TEXT,
+                pilot TEXT
+            )
+        """)
+        self.conn.commit()
 
     def save(self, entity):
-        table = entity._table
-        pk = entity._db
+        table = getattr(entity, "_table", "local")
+        pk = getattr(entity, "_pk", "id")
         if entity._exists:
             changes = entity.get_dirty()
             if not changes:

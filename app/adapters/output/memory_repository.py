@@ -7,8 +7,8 @@ class MemoryRepository(Repository):
         print("Starting memory repository")
 
     def save(self, entity):
-        db = entity._db
-        table = entity._table
+        db = getattr(entity, "_db", "local")
+        table = getattr(entity, "_table", "local")
         self._store.setdefault(db, {}).setdefault(table, {})[entity.id] = entity
 
     def find_by_id(self, entity_class, id):

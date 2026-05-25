@@ -81,16 +81,18 @@ class Container:
         logger.verbose(f"Build {key.__name__} -> {cls}")
         sig = inspect.signature(cls.__init__)
         args = []
+
+        logger.verbose(f"Iterate sig class: {key}")
         for param in list(sig.parameters.values())[1:]:
             if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
                 continue
 
             local_override = getattr(cls, '_bindings', {}).get(param.annotation)
             if local_override:
-                logger.verbose(f"[Use local bindings] {cls.__name__} → {local_override.__name__}")
+                logger.verbose(f"Use local bindings: {param.annotation} → {local_override.__name__}")
                 args.append(self._build(local_override, override_map))
             else:
-                logger.verbose(f"[Use globals bindings] {param.annotation}")
+                logger.verbose(f"Use globals bindings for {param.annotation}")
                 args.append(self._build(param.annotation, override_map))
 
         instance = cls(*args)

@@ -5,6 +5,9 @@ from app.domain.flight import Flight
 
 
 class FlightService(FlightServicePort):
+    # Use _bindings to override dependency map
+    #_bindings = {Repository: SQLiteRepository}
+
     def __init__(self, repository: Repository, dispatcher: EventDispatcher):
         self.repository = repository
         self.dispatcher = dispatcher

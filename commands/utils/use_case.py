@@ -11,7 +11,7 @@ def make_use_case(name: str):
     file_path = paths["use_cases"] / f"{file_name}.py"
 
     deps = []
-    if prompt_yesno("¿Deseas usar dependencias?"):
+    if prompt_yesno("Do you want to use dependencies?"):
         valid = filter_providers_for("use_case", {})
         deps = prompt_select_providers(valid)
 

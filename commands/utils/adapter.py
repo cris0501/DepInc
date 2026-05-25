@@ -5,7 +5,7 @@ from commands.utils.dependency_rules import filter_providers_for
 from commands.utils.interactive import prompt_yesno, prompt_select_providers
 
 def make_adapter(name: str):
-    is_entry = prompt_yesno("¿Tu adapter es de entrada? (Por defecto, es de salida)")
+    is_entry = prompt_yesno("Is your adapter an input adapter? (Default is output)")
     stub_name = "adapter_input.stub" if is_entry else "adapter_output.stub"
     stub_path = paths['stubs'] / stub_name
 

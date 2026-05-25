@@ -1,21 +1,38 @@
 import sys
+import logging
+import argparse
 from commands import make, run
 
+
+VERBOSE = 5
+def verbose(self, message, *args, **kwargs):
+    if self.isEnabledFor(VERBOSE):
+        self._log(VERBOSE, message, args, **kwargs)
+
 def main():
-    if len(sys.argv) < 2:
-        print("Uso: python depinc.py [make|run]")
-        return
+    logging.addLevelName(VERBOSE, "VERBOSE")
+    logging.Logger.verbose = verbose
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('command', choices=['make', 'run'])
+    parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--debug',   action='store_true')
+    args = parser.parse_args()
 
-    command = sys.argv[1].lower()
+    if args.debug:
+        level = logging.DEBUG
+    elif args.verbose:
+        level = VERBOSE
+    else:
+        level = logging.WARNING
 
-    match command:
+    logging.basicConfig(level=level, format="%(name)s: %(message)s")
+
+    match args.command:
         case "make":
             make.execute()
         case "run":
             run.execute()
-        case _:
-            print(f"Comando desconocido: {command}")
-            print("Comandos disponibles: make, run")
 
 if __name__ == "__main__":
     main()

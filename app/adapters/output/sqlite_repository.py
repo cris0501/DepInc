@@ -5,7 +5,7 @@ from config.paths import paths
 
 class SQLiteRepository(Repository):
     def __init__(self):
-        print("Iniciando sqlite repository")
+        print("Starting sqlite repository")
         self.conn = sqlite3.connect(paths['root'] / 'database.db')
 
     def save(self, entity):

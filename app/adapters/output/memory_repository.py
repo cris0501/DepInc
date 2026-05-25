@@ -4,7 +4,7 @@ from app.ports.output.repository import Repository
 class MemoryRepository(Repository):
     def __init__(self):
         self._store = {}
-        print("Iniciando memory repository")
+        print("Starting memory repository")
 
     def save(self, entity):
         db = entity._db

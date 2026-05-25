@@ -14,7 +14,7 @@ def apply(middlewares: list, method):
         ctx = {"args": args, "kwargs": kwargs}
         for mw in middlewares:
             if not mw().before(ctx):
-                print(f"[Middleware bloqueado]: {mw.__name__}")
+                print(f"[Middleware blocked]: {mw.__name__}")
                 return
         result = method(*args, **kwargs)
         for mw in middlewares:

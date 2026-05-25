@@ -22,10 +22,10 @@ def registrar_middleware(_name: str):
     with open(init_path, "r", encoding="utf-8") as f:
         contenido = f.readlines()
         if linea in contenido:
-            print(f"{_name} ya está registrado.")
+            print(f"{_name} is already registered.")
             return
 
     # Escribe la línea al final
     with open(init_path, "a", encoding="utf-8") as f:
         f.write("\n"+linea)
-        print(f"{_name} registrado correctamente.")
+        print(f"{_name} registered successfully.")

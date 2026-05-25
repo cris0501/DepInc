@@ -2,7 +2,7 @@ from .utils import make_use_case, make_adapter, make_model, make_middleware
 from .utils.interactive import generate_code, write_file
 
 def execute():
-    print("\nQué tipo de archivo quieres crear:")
+    print("\nWhat type of file do you want to create:")
     print("[1] Adapter")
     print("[2] UseCase")
     print("[3] Model")
@@ -10,7 +10,7 @@ def execute():
     type_file = int(input("> ")) - 1
 
     name_type = ["adapter", "usecase", "model", "middleware"][type_file]
-    print(f"\nNombre del {name_type}:")
+    print(f"\n{name_type} name:")
     name = input("> ").strip()
 
     if name_type == "adapter":

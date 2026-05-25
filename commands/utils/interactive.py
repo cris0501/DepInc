@@ -6,7 +6,7 @@ def prompt_yesno(question: str) -> bool:
 
 def prompt_select_providers(provider_dict):
     keys = list(provider_dict.keys())
-    print("\nSelecciona las dependencias a inyectar (separa por coma):")
+    print("\nSelect dependencies to inject (comma separated):")
     for i, key in enumerate(keys, 1):
         print(f"[{i}] {key.__name__}")
     indexes = input("> ").strip().split(",")
@@ -40,8 +40,8 @@ def generate_code(stub, class_name, deps):
 
 def write_file(path: Path, content: str, force: bool = False):
     if path.exists() and not force:
-        print(f"[!] El archivo '{path}' ya existe. Usa --force para sobrescribir.")
+        print(f"[!] File '{path}' already exists. Use --force to overwrite.")
         return False
     path.write_text(content)
-    print(f"[✓] Archivo creado: {path}")
+    print(f"[✓] File created: {path}")
     return True

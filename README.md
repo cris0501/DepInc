@@ -1,139 +1,207 @@
 # DepInC (Dependency Injection Core)
 
-**DepInC** es un micro-framework experimental en Python basado en la arquitectura **hexagonal (puertos y adaptadores)**, diseñado para facilitar el desarrollo desacoplado y modular de aplicaciones. Su núcleo está centrado en la **inyección de dependencias** y la capacidad de registrar dinámicamente servicios, casos de uso, adaptadores y modelos de dominio.
+**DepInC** is an experimental Python micro-framework based on **Hexagonal Architecture (Ports & Adapters)**, designed to enable decoupled, modular application development. Its core focuses on **dependency injection** and the ability to dynamically register services, use cases, adapters, and domain models.
 
-> **Nota**: El ejemplo actual implementa un dominio ficticio de "vuelos" únicamente como **prueba de concepto** para validar la funcionalidad del framework. **El objetivo real no es crear una app de vuelos**, sino sentar las bases de un sistema extensible, tipo Laravel, con comandos artesanales que faciliten la creación de puertos, adaptadores y estructuras hexagonales.
+> **Note**: The current example implements a fictional "flights" domain purely as a **proof of concept** to validate the framework's functionality. **The real goal is not to build a flight app**, but to lay the foundations of an extensible, Laravel-inspired system with artisan-like commands that simplify the creation of ports, adapters, and hexagonal structures.
 
-## Características
+## Features
 
-- Arquitectura **Hexagonal** real con separación de dominios, casos de uso y adaptadores.
-- Contenedor de inyección de dependencias simple.
-- Enrutamiento de comandos CLI como adaptador de entrada.
-- Repositorio en memoria y dispatcher por consola como adaptadores de salida.
-- Modelo de dominio fácilmente ampliable.
-- Estructura preparada para comandos personalizados tipo `artisan`.
+- True **Hexagonal Architecture** with clear separation of domain, use cases, and adapters.
+- Simple dependency injection container with circular-dependency detection.
+- CLI command routing as an input adapter.
+- In-memory and SQLite repositories as output adapters.
+- Easily extensible domain models with dirty-tracking and fillable fields.
+- Middleware pipeline with `before` / `after` hooks, configured centrally via `config/middlewares.py`.
+- Local dependency overrides per service via `_bindings`.
+- Artisan-style `make` command for scaffolding components.
 
-## Estructura
+## Structure
 
 ```
 .
-├── adapters/               # Adaptadores de entrada (CLI) y salida (repositorio en memoria, dispatcher)
-├── commands/               # Comandos disponibles para el CLI
-    ├── utils/stubs/        # Plantillas de archivos
-├── config/                 # Configuración general de la app
-    ├── paths               # Listado de rutas accesibles por la app
-    ├── providers           # Listado inicial de dependencias inyectables
-├── core/                   # Núcleo: modelos de dominio, puertos, casos de uso
-├── infrastructure/         # Contenedor y configuración de dependencias
-    ├── container/          # Contenedor general de la APP
-    ├── decorators/         # Decoradores que agregan funcionalidad
-    ├── middlewares/        # Listado de middlewares disponibles
-├── depinc.py               # Punto de entrada principal
+├── app/
+│   ├── adapters/           # Input (CLI) and output (repository, dispatcher) adapters
+│   ├── domain/             # Domain models
+│   ├── middlewares/        # Middleware implementations
+│   ├── ports/              # Input and output port interfaces
+│   └── use_cases/          # Use case / service implementations
+├── commands/               # CLI commands (make, run) and their utilities
+├── config/
+│   ├── bindings.py         # Global interface → implementation mappings
+│   ├── middlewares.py      # Middleware configuration per service and method
+│   └── paths.py            # Application path constants
+├── depinc/                 # Framework core (container, model, middleware, registry)
+└── main.py                 # Entry point
 ```
 
-## Ejecuta de la app
+## Running the app
 
 ```bash
-python depinc.py run
+python main.py run
 ```
 
-Esto ejecuta el adaptador CLI con comandos de prueba para vuelos (crear y listar vuelos).
-
-## Comandos de ayuda
+Executes the CLI adapter with sample commands for the flights domain (register and list flights).
 
 ```bash
-python depinc.py make
+python main.py run --debug
 ```
 
-Este comando es una utilidad para crear archivos basicos que cumplen con la estructura recomendada. Es un maker interactivo que te permite personalizar la creacion de tus componentes, incluso te permite hacer una configuracion basica de los provider que puedes inyectar de forma automatica por el contenedor. Este maker nos permite creear:
+Enables debug-level logging to trace container builds and middleware calls.
 
-- Modelos
-- Casos de uso
-- Adaptadores
+## Make command
+
+```bash
+python main.py make
+```
+
+An interactive scaffolding utility for generating files that follow the recommended structure. It lets you create:
+
+- Models
+- Use cases (services)
+- Adapters
 - Middlewares
 
-## Contenedor
+## Container
 
-El contenedor principal es el encargado de cargar los providers, services y el resto de clases marcadas para ser inyectables. Resuelve dependencias anidadas y permite la sobre escritura de dependencias. Esta lectura de dependencias usa un mecanismo dual. Esto es, a traves de un listado podemos indicarle cuales seran las dependencias estaticas, clases que siempre estaran disponibles para ser inyectables. Aqui, DepInC incluye clases basicas, las cuales son remplazables por el desarrollador. Para ello, se usa el decorador **@inyectable()** (del cual se hara una seccion), al usarlo, podemos sobre escribir la clase asociada a una key, la cual, se recomienda sea el port del que heredan, lo cual lo hace mas dinamico.
+The container loads bindings from `config/bindings.py` and middlewares from `config/middlewares.py` at startup. It resolves nested dependencies automatically, detects circular references, and validates that every constructor parameter has a type annotation and a registered binding.
 
-## Dependencias
-
-Para saber que dependencias puede inyectar el contenedor, se puede marcar cualquier clase con el decorador **@inyectable()**, este decorador le indica al contenedor que la clase sera disponible para resolver de forma dinamica. Es importante mencionar que las dependencias del mismo estaran indicadas en el constructor de la clase como parametros, no en el cuerpo del mismo.
-
-De igual forma, se proverá de un listado basico en la carpeta de configuraciones donde se listan las clases que estaran disponibles siempre, sin la necesidad de que estas incluyan el decorador en su definicion. Es un mecanismo poderoso que permite una dualidad dando preferencia a las clases marcadas por el decorador de forma explicita por el desarrollador. Sin embargo, para evitar coliciones y permitir la inyectabilidad de una o mas clases del mismo tipo (repositorios por ejemplo), el decorador permite hacer uso de variantes mediante el parametro **variant**.
+**Global bindings** (`config/bindings.py`) declare which concrete class satisfies each interface across the whole application:
 
 ```python
-from core.ports.output.repository import Repository # <-- Port
-from infrastructure import inyectable # <-- decorador
-
-@inyectable(key=Repository, variant='sqlite')
-class SQLiteFlightRepository(Repository):
-    def __init__(self):
-        ...
-
-@inyectable(key=Repository, variant='memory')
-class MemoryFlightRepository(Repository):
-    def __init__(self):
-        ...
+bindings = {
+    FlightServicePort: FlightService,
+    Repository:        MemoryRepository,
+    EventDispatcher:   ConsoleEventDispatcher,
+}
 ```
 
-Posteriormente, cuando se solicita la resolucion de cualquier clase que haga uso de un repositorio, basta con pasar un diccionario indicando explicitamente el nombre de la key con la que se registro asociada a la variante que se usara:
+**Resolution** builds the full dependency graph from the type annotations in each class's `__init__`:
 
 ```python
-flight_service = app.resolve(FlightService, {'repository': 'memory'})
-flight_service = app.resolve(FlightService, {'repository': 'sqlite'})
+from depinc import Container
+
+app = Container()
+service = app.resolve(FlightServicePort)
 ```
 
-Esto indica al contenedor con precision que repositorio usar, lo que permite multiples referencias a un mismo tipo de clase sin coliciones. De esta forma, las clases pueden tener como parametro un port de tipo Repository y nos permite indicar de forma concreta cual usar sin la necesidad de instanciarlo previamente.
+**Override at call-site** — pass a class or a dict to swap an implementation for a single resolution without touching the global config:
 
-## Modelos
+```python
+# by class (auto-detected from its base)
+service = app.resolve(FlightServicePort, SQLiteRepository)
 
-Todo modelo hereda de una clase base **model.py** el cual contiene la logica del control interno de estado. Se usan atributos internos y la modificacion de metodos magicos para controlar el estado del modelo. Esto permite:
+# or explicit dict
+service = app.resolve(FlightServicePort, {Repository: SQLiteRepository})
+```
 
-- Conocer los atributos originales durante la creacion del modelo.
-- Conocer los atributos que han sido modificados para optimizar las peticiones del repositorio.
-- Mantiene un control interno de cuales son los atributos que seran almacenados por el repositorio (**fillables**).
-- Marcar nuevos atributos, dinamicos o generados durante ejecucion, para ser almacenados.
+**Local overrides per service** (`_bindings`) — a service can declare its own dependency map that takes precedence over the global one. This lets a service be collocated with its preferred adapter without changing `config/bindings.py`:
 
-## Casos de uso
-
-Aqui se define la logica de un caso de uso (un proceso que nuestra app llevara acabo). En esta etapa no se hace directamente la modificacion de los estados internos de los modelos, esto es tarea de los propios modelos. La programacion en esta seccion debe ser mas declarativa. Es comun que sea aqui donde se usen los repositorios y los modelos juntos puesto que se hacen las valdiaciones correspondientes y se delega las tareas de mutaciones, almacenamiento y cualquier contacto con el exterior al resto de capas.
+```python
+class FlightService(Service, FlightServicePort):
+    _bindings = {Repository: SQLiteRepository}  # always uses SQLite for this service
+```
 
 ## Middlewares
 
-Un Middleware es una funcion que se ejecuta antes o despues de una funcion y tiene la capacidad de modificar el funcionamiento de la misma, inclusive denegar su ejecucion. Este tipo de elementos son muy utiles, principalemte para hacer validaciones y permitir ejecutar ciertas acciones. Estas funciones son invocadas mediante un decorador creado para la facilidad de uso. Cuando se crea un caso de uso, este ya incluye la importacion del decorador **@middleware**. 
-
-Este decorador ejecutara los middlewares que recibe como parametro. Para un caso de uso, estos se ejecutan antes del metodo que se invoca, esto ya que un middleware se ejecuta antes o despues del caso de uso y puesto que el caso de uso no tiene el deber de interacturar con la respuesta del adaptador (como escribir en db, crear respuesta json, etc), los middlewares se ejecutan antes del metodo invocado del servicio.
-
-Se pueden crear middlewares mediante el maker que ofrece **depinc**.
+Middlewares are configured centrally in `config/middlewares.py`, grouped by service port and method name. The container applies them automatically when it builds the service — no decorator needed in the service class itself.
 
 ```python
-from infrastructure import middleware # <-- decorador
-from infrastructure.middlewares import AuthMiddleware # <-- Middleware
+# config/middlewares.py
+from app.ports.input.flight_service_port import FlightServicePort
+from app.middlewares import AuthMiddleware, ExistsMiddleware, LoggerMiddleware
+from app.domain import Pilot
 
-class Service():
-    @middleware([AuthMiddleware])
-    def use_method (self, deps):
-        ...
+middlewares = {
+    FlightServicePort: {
+        "register_flight": [AuthMiddleware, LoggerMiddleware],
+        "assign_pilot":    [ExistsMiddleware(Pilot)],
+    }
+}
 ```
 
-## Futuro del proyecto
+Each middleware implements `Middleware` from `depinc` and can define:
 
-- Soporte para mas comandos personalizados (`list [use_cases, adapters]`, etc).
-- Capa ORM básica con soporte a múltiples drivers (`mysql`, `sqlite`, `mongo`).
-- Sistema de eventos y observadores.
-- Modularización avanzada para proyectos grandes.
+- `before(ctx) -> bool` — runs before the method; returning `False` blocks execution.
+- `after(ctx, result)` — runs after the method with the return value.
 
-## Requisitos
+```python
+from depinc import Middleware
 
-- Python 3.12 o superior
+class AuthMiddleware(Middleware):
+    def before(self, ctx) -> bool:
+        print("Auth check...")
+        return True
+```
 
-## Estado
+Middlewares passed as classes are instantiated fresh on each call. Middlewares passed as instances (e.g. `ExistsMiddleware(Pilot)`) are reused, which allows them to carry configuration.
 
-Este proyecto se encuentra en **fase experimental** y está en desarrollo activo. Cualquier contribución o sugerencia es bienvenida.
+## Models
 
+Every model inherits from `depinc.Model`, which manages internal state via `_attributes`, `_dirty`, and `_fillable` sets.
 
-## Licencia
+```python
+from depinc import Model
 
-Este proyecto está licenciado bajo la [Creative Commons Atribución 4.0 Internacional (CC BY 4.0)](http://creativecommons.org/licenses/by/4.0/).
-Puedes compartir y modificar libremente este código, siempre y cuando menciones al autor original.
+class Flight(Model):
+    _table = 'flights'        # optional — defaults to lowercase class name + 's'
+    _pk    = 'id'             # optional — defaults to 'id'
+    _schema = {               # used by SQLiteRepository to auto-migrate the table
+        'id':          'TEXT PRIMARY KEY',
+        'destination': 'TEXT NOT NULL',
+        'pilot':       'TEXT',
+    }
+
+    def __init__(self, id: str, destination: str, pilot: str = None):
+        super().__init__(id=id, destination=destination, pilot=pilot)
+```
+
+Key capabilities:
+
+- **Dirty tracking** — `get_dirty()` returns only the fields changed since the last save, so update queries are minimal.
+- **Fillable fields** — only attributes declared at construction time (or added via `allow(*fields)`) are persisted.
+- **`_exists` flag** — set by `from_persistence()` so the repository can distinguish INSERT from UPDATE.
+- **`sync_original()`** — clears the dirty set after a successful save.
+
+## Services
+
+Services inherit from `depinc.Service`, which provides `repository_for(model_class)` as an escape hatch. Normally the service uses its injected `repository`; calling `repository_for` builds a repository specific to a model (using that model's `_repository` attribute if set) and runs `_migrate` to ensure the table exists.
+
+```python
+from depinc import Service
+
+class FlightService(Service, FlightServicePort):
+    def __init__(self, repository: Repository, dispatcher: EventDispatcher):
+        super().__init__(repository)
+        self.dispatcher = dispatcher
+
+    def register_flight(self, flight_id: str, destination: str):
+        flight = Flight(flight_id, destination)
+        repo = self.repository_for(flight)   # escape hatch — may use a different repo
+        repo.save(flight)
+```
+
+> `repository_for` is an explicit escape hatch that breaks strict hexagonal architecture. Use it only when colocation of a model with its preferred adapter is more important than layer purity.
+
+## SQLite Repository
+
+`SQLiteRepository` auto-migrates tables from the model's `_schema` on first use and supports `save` (INSERT or UPDATE based on `_exists`) and `find_by_id`. The table name is derived from `_table` or defaults to the lowercase class name with an `s` suffix.
+
+## Future work
+
+- Additional scaffolding commands (`list use_cases`, `list adapters`, etc.).
+- ORM layer with multi-driver support (`mysql`, `sqlite`, `mongo`).
+- Event and observer system.
+- Advanced modularization for large projects.
+
+## Requirements
+
+- Python 3.12+
+
+## Status
+
+This project is **experimental** and under active development. Contributions and suggestions are welcome.
+
+## License
+
+This project is licensed under the [Creative Commons Attribution 4.0 International (CC BY 4.0)](http://creativecommons.org/licenses/by/4.0/).
+You are free to share and adapt this code as long as you credit the original author.

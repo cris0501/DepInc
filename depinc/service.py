@@ -13,7 +13,12 @@ class Service:
             invoque this function manually, simillary to
             hatch in services
         """
+
         repo_cls = getattr(model_class, '_repository', None)
         if repo_cls:
-            return self._container._build(repo_cls)
-        return self.repository        
+            repo = self._container._build(repo_cls)
+        else:
+            repo = self.repository
+
+        repo._migrate(model_class)
+        return repo

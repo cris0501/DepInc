@@ -9,7 +9,8 @@ class MemoryRepository(Repository):
     def save(self, entity):
         db = getattr(entity, "_db", "local")
         table = getattr(entity, "_table", "local")
-        self._store.setdefault(db, {}).setdefault(table, {})[entity.id] = entity
+        pk = getattr(entity, "_pk", "id")
+        self._store.setdefault(db, {}).setdefault(table, {})[pk] = entity
 
-    def find_by_id(self, entity_class, id):
-        return self._store.get(entity_class._db, {}).get(entity_class._table, {}).get(id)
+    def find_by_id(self, entity, id):
+        return self._store.get(entity._db, {}).get(entity._table, {}).get(id)

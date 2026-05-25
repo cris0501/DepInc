@@ -5,21 +5,26 @@ from config.paths import paths
 
 class SQLiteRepository(Repository):
     def __init__(self):
-        print("Starting sqlite repository")
+        print("Starting sqlite")
         self.conn = sqlite3.connect(paths['root'] / 'database.db')
-        self._migrate()
 
-    def _migrate(self):
-        self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS flights (
-                id TEXT PRIMARY KEY,
-                destination TEXT,
-                pilot TEXT
+    def _migrate(self, entity):
+        table = getattr(entity, "_table", "local")
+        schema = getattr(entity, '_schema', None)
+        if schema is None:
+            raise ValueError(f"{entity.__name__} no define _schema")
+
+        columns = ',\n    '.join(f"{col} {definition}" for col, definition in schema.items())
+        
+        self.conn.execute(f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                {columns}
             )
         """)
         self.conn.commit()
 
     def save(self, entity):
+        self._migrate(entity)
         table = getattr(entity, "_table", "local")
         pk = getattr(entity, "_pk", "id")
         if entity._exists:

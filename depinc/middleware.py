@@ -12,12 +12,18 @@ class Middleware(ABC):
 def apply(middlewares: list, method):
     def wrapper(*args, **kwargs):
         ctx = {"args": args, "kwargs": kwargs}
-        for mw in middlewares:
-            if not mw().before(ctx):
-                print(f"[Middleware blocked]: {mw.__name__}")
+        
+        instances = [mw() if isinstance(mw, type) else mw for mw in middlewares]
+        
+        for mw in instances:
+            if not mw.before(ctx):
+                print(f"[Middleware blocked]: {type(mw).__name__}")
                 return
+        
         result = method(*args, **kwargs)
-        for mw in middlewares:
-            mw().after(ctx, result)
+        
+        for mw in instances:
+            mw.after(ctx, result)
+        
         return result
     return wrapper

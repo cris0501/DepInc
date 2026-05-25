@@ -47,16 +47,17 @@ class SQLiteRepository(Repository):
         self.conn.commit()
         entity.sync_original()
 
-    def find_by_id(self, model_class, id_value):
-        table = model_class._table
-        pk = model_class._db
+    def find_by_id(self, model, id_value):
+        table = self.get_table(model)
+        pk = getattr(model, '_pk', None)
         cursor = self.conn.cursor()
         cursor.execute(f"SELECT * FROM {table} WHERE {pk} = ?", (id_value,))
         row = cursor.fetchone()
         if row:
             columns = [desc[0] for desc in cursor.description]
-            return model_class.from_persistence(**dict(zip(columns, row)))
+            return model.from_persistence(**dict(zip(columns, row)))
         return None
 
     def get_table(self, entity):
-        return getattr(entity, '_table', None) or type(entity).__name__.lower() + 's'
+        name = entity.__name__ if isinstance(entity, type) else type(entity).__name__
+        return getattr(entity, '_table', None) or name.lower() + 's'

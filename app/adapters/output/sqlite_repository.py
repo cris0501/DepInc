@@ -9,7 +9,7 @@ class SQLiteRepository(Repository):
         self.conn = sqlite3.connect(paths['root'] / 'database.db')
 
     def _migrate(self, entity):
-        table = getattr(entity, "_table", "local")
+        table = self.get_table(entity)
         schema = getattr(entity, '_schema', None)
         if schema is None:
             raise ValueError(f"{entity.__name__} no define _schema")
@@ -25,7 +25,7 @@ class SQLiteRepository(Repository):
 
     def save(self, entity):
         self._migrate(entity)
-        table = getattr(entity, "_table", "local")
+        table = self.get_table(entity)
         pk = getattr(entity, "_pk", "id")
         if entity._exists:
             changes = entity.get_dirty()
@@ -57,3 +57,6 @@ class SQLiteRepository(Repository):
             columns = [desc[0] for desc in cursor.description]
             return model_class.from_persistence(**dict(zip(columns, row)))
         return None
+
+    def get_table(self, entity):
+        return getattr(entity, '_table', None) or type(entity).__name__.lower() + 's'

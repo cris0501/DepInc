@@ -1,7 +1,6 @@
 from depinc import Model
 
 class Flight(Model):
-    _table = 'flights'
     _schema = {
         'id':          'TEXT PRIMARY KEY',
         'destination': 'TEXT NOT NULL',

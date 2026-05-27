@@ -9,9 +9,9 @@ def main():
     parser.add_argument('--debug',   action='store_true')
     args = parser.parse_args()
 
-    level = logging.DEBUG if args.debug else logging.WARNING
+    level = logging.DEBUG if args.debug else logging.INFO
 
-    logging.basicConfig(level=level, format="%(name)s: %(message)s")
+    logging.basicConfig(level=level, format="[%(name)s] %(message)s")
 
     match args.command:
         case "make":

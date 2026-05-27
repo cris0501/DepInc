@@ -1,5 +1,6 @@
 import inspect
 import logging
+from depinc import context
 from depinc.middleware import apply
 
 logger = logging.getLogger(__name__)
@@ -7,8 +8,11 @@ logger = logging.getLogger(__name__)
 
 class Container:
     def __init__(self):
+        context.container = self
         self._bindings = {}
+        self._cache = {}
         self._middlewares = {}
+        self._singletons: set = set()
         self.auto_register()
 
     def register(self, key, provider):
@@ -25,7 +29,17 @@ class Container:
         except ImportError:
             pass
 
+    def singleton(self, *classes):
+        """Marca clases como singleton al registrarlas."""
+        self._singletons.update(classes)
+        return self
+
     def resolve(self, key, overrides=None):
+        if key in self._singletons:
+            if key not in self._cache:
+                self._cache[key] = self._build(key, overrides)
+            return self._cache[key]
+
         override_map = self._normalize_overrides(overrides) if overrides else {}
         self._validate(key, override_map=override_map)
         return self._build(key, override_map=override_map)

@@ -1,3 +1,6 @@
 from contextvars import ContextVar
+import logging
 
-logger = ContextVar('logger', default=None)
+
+container = None
+logger: ContextVar[logging.Logger] = ContextVar("logger")

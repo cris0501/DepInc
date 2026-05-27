@@ -1,13 +1,15 @@
 from depinc.adapter import Adapter
+from depinc import context
 from depinc.context import logger
+from app.adapters.output.adapter_logger import LoggerAdapter
 from app.ports.input.flight_service_port import FlightServicePort
-from app.adapters.output.adapter_logger import AdapterLogger
 
 
 class CLIAdapter(Adapter):
     def run(self):
-        AdapterLogger(self.__class__.__name__).run()
-        flight_service = self._app.resolve(FlightServicePort)
+        LoggerAdapter(self).run()
+        logger.get().debug(f"Contenedor: {context.container}")
+        flight_service = context.container.resolve(FlightServicePort)
         while True:
             print("1. Register Flight")
             print("2. Assign Pilot")

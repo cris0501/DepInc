@@ -1,14 +1,23 @@
 import logging
+import threading
 from depinc import App, registry
-from app.adapters.input.cli_adapter import CLIAdapter
 from depinc import Service
+from config.adapters import adapters
 
 logger = logging.getLogger(__name__)
 
 def execute():
     app = App()
     registry.set_container(app)
+    Service._container = app
 
-    Service._container = app 
+    threads = [
+        threading.Thread(target=adapter_cls(app).run, daemon=True)
+        for adapter_cls in adapters
+    ]
 
-    app.resolve(CLIAdapter).run()
+    for t in threads:
+        t.start()
+
+    for t in threads:
+        t.join()

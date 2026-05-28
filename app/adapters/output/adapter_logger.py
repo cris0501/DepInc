@@ -1,6 +1,6 @@
 import logging
 from depinc.adapter import Adapter
-from depinc import context
+from depinc.logger import logger
 
 
 class LoggerAdapter(Adapter):
@@ -8,4 +8,4 @@ class LoggerAdapter(Adapter):
         self._name = adapter.__class__.__name__
 
     def run(self):
-        context.logger.set(logging.getLogger(self._name))
+        logger.set(logging.getLogger(self._name))

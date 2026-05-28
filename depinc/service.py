@@ -1,10 +1,11 @@
 from app.ports.output import Repository
-from depinc.context import logger,container
+from depinc import context
+from depinc.logger import logger
+
 
 class Service:
     def __init__(self, repository: Repository):
         self.repository = repository
-        self.logger = logger.get()
 
     def repository_for(self, model_class):
         """
@@ -16,7 +17,7 @@ class Service:
 
         repo_cls = getattr(model_class, '_repository', None)
         if repo_cls:
-            repo = container._build(repo_cls)
+            repo = context.container._build(repo_cls)
         else:
             repo = self.repository
 

@@ -9,30 +9,33 @@ logger = logging.getLogger(__name__)
 class Container:
     def __init__(self):
         context.container = self
+        self._hooks = {
+            "before_resolve": [],
+            "after_resolve":  [],
+            "after_build":    [],
+        }
+
         self._bindings = {}
-        self._cache = {}
+        self._singletons: set = set() # Save class
+        self._cache = {} # Save instances / objs
         self._middlewares = {}
-        self._singletons: set = set()
         self.auto_register()
 
-    def register(self, key, provider):
+    def provider(self, key, provider):
+        """ Register providers of dependencies """
         self._bindings[key] = provider
 
-    def auto_register(self):
-        from config.bindings import bindings
-        for key, cls in bindings.items():
-            self.register(key, cls)
-
-        try:
-            from config.middlewares import middlewares
-            self._middlewares = middlewares
-        except ImportError:
-            pass
-
     def singleton(self, *classes):
-        """Marca clases como singleton al registrarlas."""
+        """ Register providers that will be singletons """
         self._singletons.update(classes)
         return self
+
+    def hook(self, point: str, fn, priority: int = 50):
+        """ Register hook """
+        if point not in self._hooks:
+            raise ValueError(f"Hook '{point}' no existe")
+        self._hooks[point].append((priority, fn))
+        self._hooks[point].sort(key=lambda x: x[0])
 
     def resolve(self, key, overrides=None):
         if key in self._singletons:
@@ -115,3 +118,14 @@ class Container:
         for method_name, mws in method_map.items():
             original = getattr(instance, method_name)
             setattr(instance, method_name, apply(mws, original))
+
+    def auto_register(self):
+        from config.bindings import bindings
+        for key, cls in bindings.items():
+            self.provider(key, cls)
+
+        try:
+            from config.middlewares import middlewares
+            self._middlewares = middlewares
+        except ImportError:
+            pass

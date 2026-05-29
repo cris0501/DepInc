@@ -1,7 +1,7 @@
 import time
 from depinc import context
 from depinc.adapter import Adapter
-from depinc.logger import logger
+from depinc.plugins.logger import logger
 from app.adapters.output.adapter_logger import LoggerAdapter
 from app.ports.input.flight_service_port import FlightServicePort
 

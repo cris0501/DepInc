@@ -1,6 +1,6 @@
 import logging
 from depinc.adapter import Adapter
-from depinc.logger import logger
+from depinc.plugins.logger import logger
 
 
 class LoggerAdapter(Adapter):

@@ -1,7 +1,7 @@
 import inspect
+import importlib
 import logging
 from depinc import context
-from depinc.middleware import apply
 
 logger = logging.getLogger(__name__)
 
@@ -12,13 +12,11 @@ class Container:
         self._hooks = {
             "before_resolve": [],
             "after_resolve":  [],
-            "after_build":    [],
         }
 
         self._bindings = {}
         self._singletons: set = set() # Save class
         self._cache = {} # Save instances / objs
-        self._middlewares = {}
         self.auto_register()
 
     def provider(self, key, provider):
@@ -38,16 +36,28 @@ class Container:
         self._hooks[point].sort(key=lambda x: x[0])
 
     def resolve(self, key, overrides=None):
-        if key in self._singletons:
-            if key not in self._cache:
-                self._cache[key] = self._build(key, overrides)
-            return self._cache[key]
+        # Some pluggin would interrup resolve
+        for _, hook in self._hooks["before_resolve"]:
+            result = hook(key)
+            if result is not None:
+                return result # Override resolve for pluggin
 
         override_map = self._normalize_overrides(overrides) if overrides else {}
-        self._validate(key, override_map=override_map)
-        return self._build(key, override_map=override_map)
+        if key in self._singletons:
+            if key not in self._cache:
+                self._cache[key] = self._build(key, override_map)
+            return self._cache[key]
+
+        instance = self._build(key, override_map)
+
+        # Pluggins that modify execution of obj
+        for _, hook in self._hooks["after_resolve"]:
+            instance = hook(key, instance)
+
+        return instance
 
     def _normalize_overrides(self, overrides):
+        """ Create a dicc with type -> class """
         if isinstance(overrides, dict):
             return overrides
 
@@ -71,6 +81,7 @@ class Container:
         return result
 
     def _validate(self, key, chain=None, override_map=None):
+        """ Recursive fuction that registry dependencies """
         chain = chain or set()
         override_map = override_map or {}
 
@@ -107,25 +118,14 @@ class Container:
             else:
                 args.append(self._build(param.annotation, override_map))
 
-        instance = cls(*args)
-        self._apply_middlewares(key, instance)
-        return instance
-
-    def _apply_middlewares(self, key, instance):
-        method_map = self._middlewares.get(key)
-        if not method_map:
-            return
-        for method_name, mws in method_map.items():
-            original = getattr(instance, method_name)
-            setattr(instance, method_name, apply(mws, original))
+        return cls(*args)
 
     def auto_register(self):
         from config.bindings import bindings
         for key, cls in bindings.items():
             self.provider(key, cls)
 
-        try:
-            from config.middlewares import middlewares
-            self._middlewares = middlewares
-        except ImportError:
-            pass
+        from depinc.plugins import plugins
+        for name in plugins:
+            mod = importlib.import_module(f"depinc.plugins.{name}.plugin")
+            mod.install(self)

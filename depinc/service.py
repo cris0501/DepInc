@@ -1,6 +1,6 @@
 from app.ports.output import Repository
 from depinc import context
-from depinc.logger import logger
+from depinc.plugins.logger import logger
 
 
 class Service:

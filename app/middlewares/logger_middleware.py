@@ -1,4 +1,4 @@
-from depinc import Middleware
+from depinc.plugins.middleware import Middleware
 
 
 class LoggerMiddleware(Middleware):

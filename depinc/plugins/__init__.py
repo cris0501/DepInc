@@ -1,0 +1,1 @@
+plugins = ["middleware", "model", "logger"]

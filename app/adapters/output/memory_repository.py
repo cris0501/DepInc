@@ -13,4 +13,6 @@ class MemoryRepository(Repository):
         self._store.setdefault(db, {}).setdefault(table, {})[pk] = entity
 
     def find_by_id(self, entity, id):
-        return self._store.get(entity._db, {}).get(entity._table, {}).get(id)
+        db = getattr(entity, "_db", "local")
+        table = getattr(entity, "_table", "local")
+        return self._store.get(db, {}).get(table, {}).get(id)

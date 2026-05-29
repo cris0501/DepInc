@@ -11,7 +11,7 @@ class Middleware(ABC):
 
 def apply(middlewares: list, method):
     def wrapper(*args, **kwargs):
-        ctx = {"args": args, "kwargs": kwargs}
+        ctx = {"args": args, "kwargs": kwargs, "service": method.__self__}
         
         instances = [mw() if isinstance(mw, type) else mw for mw in middlewares]
         

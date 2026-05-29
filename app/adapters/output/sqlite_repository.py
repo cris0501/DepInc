@@ -36,6 +36,7 @@ class SQLiteRepository(Repository):
                 f"UPDATE {table} SET {set_clause} WHERE {pk} = :{pk}",
                 {**changes, pk: entity[pk]}
             )
+            print("Update model")
         else:
             data = entity.to_dict()
             columns = ', '.join(data)
@@ -44,6 +45,7 @@ class SQLiteRepository(Repository):
                 f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
                 data
             )
+            print("Create model")
         self.conn.commit()
         entity.sync_original()
 
@@ -55,7 +57,7 @@ class SQLiteRepository(Repository):
         row = cursor.fetchone()
         if row:
             columns = [desc[0] for desc in cursor.description]
-            return model.from_persistence(**dict(zip(columns, row)))
+            return model(**dict(zip(columns, row)))
         return None
 
     def get_table(self, entity):

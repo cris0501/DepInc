@@ -11,7 +11,8 @@ class ExistsMiddleware(Middleware):
     def before(self, ctx) -> bool:
         entity_id = ctx["args"][0]
         repo_cls = getattr(self.model, '_repository', None)
-        repo = context.container.resolve(repo_cls)
+        repo = context.container.resolve(repo_cls) if repo_cls else ctx["service"].repository
+        logger.debug(f"Repo: {repo}")
         repo._migrate(self.model)
         result = repo.find_by_id(self.model, entity_id)
         if not result:

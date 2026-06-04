@@ -1,4 +1,5 @@
 class Model:
+    _db = None
     _table = None
     _pk = 'id'
 

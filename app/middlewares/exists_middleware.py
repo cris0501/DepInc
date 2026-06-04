@@ -12,10 +12,11 @@ class ExistsMiddleware(Middleware):
         entity_id = ctx["args"][0]
         repo_cls = getattr(self.model, '_repository', None)
         repo = context.container.resolve(repo_cls) if repo_cls else ctx["service"].repository
-        logger.debug(f"Repo: {repo}")
-        repo._migrate(self.model)
+        logger.debug(f"Repo: {id(repo)}")
+        # repo._migrate(self.model)
         result = repo.find_by_id(self.model, entity_id)
+        logger.debug(f"{result}")
         if not result:
-            logger.debug(f"Flight {entity_id} not found")
+            logger.debug(f"{self.model.__name__} {entity_id} not found")
             return False
         return True

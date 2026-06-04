@@ -124,6 +124,8 @@ class Container:
         from config.bindings import bindings
         for key, cls in bindings.items():
             self.provider(key, cls)
+            if getattr(cls, '_singleton', False):
+                self._singletons.add(cls)
 
         from depinc.plugins import plugins
         for name in plugins:

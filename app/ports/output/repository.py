@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 
 class Repository(ABC):
+    _singleton = True
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         if 'find_by_id' in cls.__dict__:

@@ -14,14 +14,12 @@ class Repository(ABC):
                     result = model_class.from_persistence(**result.to_dict())
                 return result
             cls.find_by_id = wrapped
-
-    @abstractmethod
-    def save(self, entity):
+    
+    def _migrate(self, model):
         pass
 
     @abstractmethod
-    def find_by_id(self, model_class, id_value):
-        pass
+    def save(self, entity): ...
 
-    def _migrate(self, entity) -> None:
-        ...
+    @abstractmethod
+    def find_by_id(self, model_class, id_value): ...

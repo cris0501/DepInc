@@ -1,1 +1,1 @@
-plugins = ["middleware", "model", "logger"]
+plugins = ["middleware", "orm", "logger"]

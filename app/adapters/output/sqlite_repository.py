@@ -1,5 +1,5 @@
 import sqlite3
-from app.ports.output.repository import Repository
+from depinc import Repository
 from config.paths import paths
 
 

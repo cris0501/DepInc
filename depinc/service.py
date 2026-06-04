@@ -1,4 +1,4 @@
-from app.ports.output import Repository
+from depinc.plugins.orm import Repository
 from depinc import context
 from depinc.plugins.logger import logger
 

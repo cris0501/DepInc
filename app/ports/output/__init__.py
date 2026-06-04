@@ -1,1 +1,1 @@
-from .repository import Repository
+from .event_dispatcher import EventDispatcher

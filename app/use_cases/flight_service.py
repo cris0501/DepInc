@@ -1,6 +1,6 @@
 from depinc import Service
 from app.ports.input.flight_service_port import FlightServicePort
-from app.ports.output.repository import Repository
+from depinc import Repository
 from app.ports.output.event_dispatcher import EventDispatcher
 from app.domain.flight import Flight
 

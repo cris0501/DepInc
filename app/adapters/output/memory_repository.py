@@ -1,4 +1,4 @@
-from app.ports.output.repository import Repository
+from depinc import Repository
 
 class MemoryRepository(Repository):
     def __init__(self):

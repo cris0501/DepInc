@@ -1,5 +1,5 @@
 from .container import Container as App
-from .plugins.orm import Model, Repository
+from .plugins.orm import Model, Repository # Modulo
 from .plugins.middleware import Middleware
-from .service import Service
+from .plugins.service.Service import Service # Clase
 from .adapter import Adapter

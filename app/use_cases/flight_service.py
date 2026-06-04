@@ -10,7 +10,7 @@ class FlightService(Service, FlightServicePort):
     #_bindings = {Repository: SQLiteRepository}
 
     def __init__(self, repository: Repository, dispatcher: EventDispatcher):
-        super().__init__()
+        # super().__init__()
         self.repository = repository
         self.dispatcher = dispatcher
 

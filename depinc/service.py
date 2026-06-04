@@ -1,12 +1,8 @@
-from depinc.plugins.orm import Repository
+from abc import ABC
 from depinc import context
-from depinc.plugins.logger import logger
 
 
-class Service:
-    def __init__(self, repository: Repository):
-        self.repository = repository
-
+class Service(ABC):
     def repository_for(self, model_class):
         """
             This method delivery breack hexagonal arquitecture,

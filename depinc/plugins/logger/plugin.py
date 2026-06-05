@@ -1,2 +1,2 @@
 def install(container):
-    pass
+    print("Logger install")

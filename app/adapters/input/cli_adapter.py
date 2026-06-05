@@ -2,6 +2,7 @@ from depinc.adapter import Adapter
 from depinc import context
 from depinc.plugins.logger import logger
 from app.ports.input.flight_service_port import FlightServicePort
+from app.use_cases.flight_service import FlightService
 
 
 class CLIAdapter(Adapter):

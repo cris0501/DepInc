@@ -1,13 +1,15 @@
 import logging
 import threading
-from app.adapters.output.memory_repository import MemoryRepository
 from depinc import App
 from config.adapters import adapters
+from depinc.plugins.container_full import plugin as full
+from app.adapters.output.memory_repository import MemoryRepository
 
 logger = logging.getLogger(__name__)
 
 def execute():
     app = App()
+    full.install(app)
     # app.singleton(MemoryRepository)
 
     threads = [

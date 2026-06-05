@@ -16,3 +16,4 @@ def install(container):
         return instance
 
     container.hook("after_resolve", _apply, priority=50)
+    print("Logger install")

@@ -17,7 +17,6 @@ def apply(middlewares: list, method):
         
         for mw in instances:
             if not mw.before(ctx):
-                print(f"[Middleware blocked]: {type(mw).__name__}")
                 return
         
         result = method(*args, **kwargs)

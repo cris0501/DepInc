@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "depinc"
+version = "1.0.0"
+description = "Minimal dependency injection framework with plugin architecture"
+requires-python = ">=3.10"
+license = {text = "CC-BY-4.0"}
+authors = [{name = "Cristian Ramirez", email = "cristian980105@gmail.com"}]
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["depinc*"]

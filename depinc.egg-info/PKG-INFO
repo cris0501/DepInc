@@ -1,0 +1,242 @@
+Metadata-Version: 2.4
+Name: depinc
+Version: 1.0.0
+Summary: Minimal dependency injection framework with plugin architecture
+Author-email: Cristian Ramirez <cristian980105@gmail.com>
+License: CC-BY-4.0
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
+# DepInC (Dependency Injection Core)
+
+**DepInC** is an experimental Python micro-framework based on **Hexagonal Architecture (Ports & Adapters)**, designed to enable decoupled, modular application development. Its core focuses on **dependency injection** and the ability to dynamically register services, use cases, adapters, and domain models.
+
+> **Note**: The current example implements a fictional "flights" domain purely as a **proof of concept** to validate the framework's functionality. **The real goal is not to build a flight app**, but to lay the foundations of an extensible, Laravel-inspired system with artisan-like commands that simplify the creation of ports, adapters, and hexagonal structures.
+
+## Features
+
+- True **Hexagonal Architecture** with clear separation of domain, use cases, and adapters.
+- **Minimal core, everything is a plugin**: container features (singletons, hooks, auto-binding, ORM, middleware) are installed by plugins that extend the container at runtime.
+- Simple dependency injection container with circular-dependency detection.
+- **Auto-binding by convention** (`autobind` plugin): a port (ABC) with exactly one discovered implementation binds itself — no config edit needed.
+- CLI command routing as an input adapter.
+- In-memory and SQLite repositories shipped as ORM drivers, selected globally via `config/database.py`.
+- Easily extensible domain models with dirty-tracking and fillable fields.
+- Middleware pipeline with `before` / `after` hooks, configured centrally via `config/middlewares.py`.
+- Local dependency overrides per service via `_bindings`.
+- Artisan-style `make` command for scaffolding components.
+
+## Structure
+
+```
+.
+├── app/
+│   ├── adapters/           # Input (CLI) and output (repository, dispatcher) adapters
+│   ├── domain/             # Domain models
+│   ├── middlewares/        # Middleware implementations
+│   ├── ports/              # Input and output port interfaces
+│   └── use_cases/          # Use case / service implementations
+├── commands/               # CLI commands (make, run) and their utilities
+├── config/
+│   ├── bindings.py         # Global interface → implementation mappings
+│   ├── middlewares.py      # Middleware configuration per service and method
+│   └── paths.py            # Application path constants
+├── depinc/                 # Framework core (container, model, middleware, registry)
+└── main.py                 # Entry point
+```
+
+## Running the app
+
+```bash
+python main.py run
+```
+
+Executes the CLI adapter with sample commands for the flights domain (register and list flights).
+
+```bash
+python main.py run --debug
+```
+
+Enables debug-level logging to trace container builds and middleware calls.
+
+## Make command
+
+```bash
+python main.py make
+```
+
+An interactive scaffolding utility for generating files that follow the recommended structure. It lets you create:
+
+- Models
+- Use cases (services)
+- Adapters
+- Middlewares
+
+## Container
+
+The container core is deliberately minimal; the `container_full` plugin installs singletons, hooks (`before_resolve` / `after_resolve`), call-site overrides, circular-dependency detection, and loads config plus the declared plugins. It resolves nested dependencies automatically and validates that every constructor parameter has a type annotation.
+
+**Auto-binding by convention** (`autobind` plugin) — the app is scanned and every port (ABC) with exactly one concrete implementation is bound automatically. Adding a new port + implementation requires **no config changes**.
+
+**Global bindings** (`config/bindings.py`) are only needed to resolve ambiguities (a port with several implementations) or to force a specific one — explicit bindings always win over the convention:
+
+```python
+bindings = {
+    Repository: SQLiteRepository,   # pick one among several implementations
+}
+```
+
+**Singletons** — classes with `_singleton = True` (like `Repository`) are built once and shared, including when they appear as nested dependencies of different services.
+
+**Resolution** builds the full dependency graph from the type annotations in each class's `__init__`:
+
+```python
+from depinc import Container
+
+app = Container()
+service = app.resolve(FlightServicePort)
+```
+
+**Override at call-site** — pass a class or a dict to swap an implementation for a single resolution without touching the global config:
+
+```python
+# by class (auto-detected from its base)
+service = app.resolve(FlightServicePort, SQLiteRepository)
+
+# or explicit dict
+service = app.resolve(FlightServicePort, {Repository: SQLiteRepository})
+```
+
+**Local overrides per service** (`_bindings`) — a service can declare its own dependency map that takes precedence over the global one. This lets a service be collocated with its preferred adapter without changing `config/bindings.py`:
+
+```python
+class FlightService(Service, FlightServicePort):
+    _bindings = {Repository: SQLiteRepository}  # always uses SQLite for this service
+```
+
+## Middlewares
+
+Middlewares are configured centrally in `config/middlewares.py`, grouped by service port and method name. The container applies them automatically when it builds the service — no decorator needed in the service class itself.
+
+```python
+# config/middlewares.py
+from app.ports.input.flight_service_port import FlightServicePort
+from app.middlewares import AuthMiddleware, ExistsMiddleware, LoggerMiddleware
+from app.domain import Pilot
+
+middlewares = {
+    FlightServicePort: {
+        "register_flight": [AuthMiddleware, LoggerMiddleware],
+        "assign_pilot":    [ExistsMiddleware(Pilot)],
+    }
+}
+```
+
+Each middleware implements `Middleware` from `depinc` and can define:
+
+- `before(ctx) -> bool` — runs before the method; returning `False` blocks execution.
+- `after(ctx, result)` — runs after the method with the return value.
+
+```python
+from depinc import Middleware
+
+class AuthMiddleware(Middleware):
+    def before(self, ctx) -> bool:
+        print("Auth check...")
+        return True
+```
+
+Middlewares passed as classes are instantiated fresh on each call. Middlewares passed as instances (e.g. `ExistsMiddleware(Pilot)`) are reused, which allows them to carry configuration.
+
+## Models
+
+Every model inherits from `depinc.Model`, which manages internal state via `_attributes`, `_dirty`, and `_fillable` sets.
+
+```python
+from depinc import Model
+
+class Flight(Model):
+    _table = 'flights'        # optional — defaults to lowercase class name + 's'
+    _pk    = 'id'             # optional — defaults to 'id'
+    _schema = {               # used by SQLiteRepository to auto-migrate the table
+        'id':          'TEXT PRIMARY KEY',
+        'destination': 'TEXT NOT NULL',
+        'pilot':       'TEXT',
+    }
+
+    def __init__(self, id: str, destination: str, pilot: str = None):
+        super().__init__(id=id, destination=destination, pilot=pilot)
+```
+
+Key capabilities:
+
+- **Dirty tracking** — `get_dirty()` returns only the fields changed since the last save, so update queries are minimal.
+- **Fillable fields** — only attributes declared at construction time (or added via `allow(*fields)`) are persisted.
+- **`_exists` flag** — set by `from_persistence()` so the repository can distinguish INSERT from UPDATE.
+- **`sync_original()`** — clears the dirty set after a successful save.
+
+## Services
+
+Services inherit from `depinc.Service`, which provides `repository_for(model_class)` as an escape hatch. Normally the service uses its injected `repository`; calling `repository_for` builds a repository specific to a model (using that model's `_repository` attribute if set) and runs `_migrate` to ensure the table exists.
+
+```python
+from depinc import Service
+
+class FlightService(Service, FlightServicePort):
+    def __init__(self, repository: Repository, dispatcher: EventDispatcher):
+        super().__init__(repository)
+        self.dispatcher = dispatcher
+
+    def register_flight(self, flight_id: str, destination: str):
+        flight = Flight(flight_id, destination)
+        repo = self.repository_for(flight)   # escape hatch — may use a different repo
+        repo.save(flight)
+```
+
+> `repository_for` is an explicit escape hatch that breaks strict hexagonal architecture. Use it only when colocation of a model with its preferred adapter is more important than layer purity.
+
+## ORM drivers
+
+Generic repositories are **framework infrastructure**, not app adapters: they live in `depinc/plugins/orm/drivers/` (`memory`, `sqlite`). The global driver is selected in `config/database.py`:
+
+```python
+# config/database.py
+database = {
+    "driver": "sqlite",        # or "memory"
+    "database": "database.db",
+}
+```
+
+Adding a new backend (mysql, mongo, redis...) is just dropping a `drivers/<name>.py` file exposing a `Repository` subclass — no other change needed.
+
+Override precedence, most specific wins:
+
+1. `model._repository` (via `Service.repository_for`)
+2. `service._bindings = {Repository: X}`
+3. call-site: `app.resolve(Port, {Repository: X})`
+4. `config/bindings.py` (explicit global override)
+5. `config/database.py` (global driver, bound by the ORM plugin)
+
+`SQLiteRepository` auto-migrates tables from the model's `_schema` on first use and supports `save` (INSERT or UPDATE based on `_exists`) and `find_by_id`. The table name is derived from `_table` or defaults to the lowercase class name with an `s` suffix.
+
+## Future work
+
+- Additional scaffolding commands (`list use_cases`, `list adapters`, etc.).
+- ORM layer with multi-driver support (`mysql`, `sqlite`, `mongo`).
+- Event and observer system.
+- Advanced modularization for large projects.
+
+## Requirements
+
+- Python 3.12+
+
+## Status
+
+This project is **experimental** and under active development. Contributions and suggestions are welcome.
+
+## License
+
+This project is licensed under the [Creative Commons Attribution 4.0 International (CC BY 4.0)](http://creativecommons.org/licenses/by/4.0/).
+You are free to share and adapt this code as long as you credit the original author.

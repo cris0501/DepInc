@@ -31,10 +31,18 @@ def install(container):
 
 
 def _ensure_config():
-    root = Path(__file__).resolve().parent.parent.parent.parent
+    root = Path.cwd()
+    _create_folder(root / "app" / "middlewares")
     mw_config = root / "config" / "middlewares.py"
     if mw_config.exists():
         return
     mw_config.write_text("""\
 middlewares = {}
 """)
+
+
+def _create_folder(path):
+    path.mkdir(parents=True, exist_ok=True)
+    init = path / "__init__.py"
+    if not init.exists():
+        init.write_text("")

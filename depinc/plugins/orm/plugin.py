@@ -19,7 +19,8 @@ def install(container):
 
 
 def _ensure_config():
-    root = Path(__file__).resolve().parent.parent.parent.parent
+    root = Path.cwd()
+    _create_folder(root / "app" / "domain")
     db_config = root / "config" / "database.py"
     if db_config.exists():
         return
@@ -39,6 +40,13 @@ def database_config():
         return database
     except ImportError:
         return {}
+
+
+def _create_folder(path):
+    path.mkdir(parents=True, exist_ok=True)
+    init = path / "__init__.py"
+    if not init.exists():
+        init.write_text("")
 
 
 def _driver_class(name):

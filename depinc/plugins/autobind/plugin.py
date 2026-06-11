@@ -32,7 +32,7 @@ def install(container):
         logger.debug("Autobind install (no bindings found)")
         return
 
-    root = Path(__file__).resolve().parent.parent.parent.parent
+    root = Path.cwd()
     bindings_path = root / "config" / "bindings.py"
 
     import_lines = "\n".join(sorted(imports))

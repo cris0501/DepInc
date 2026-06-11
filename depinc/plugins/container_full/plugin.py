@@ -6,13 +6,8 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 PROJECT_FOLDERS = [
-    "app/ports/input",
-    "app/ports/output",
-    "app/use_cases",
-    "app/domain",
     "app/adapters/input",
     "app/adapters/output",
-    "app/middlewares",
     "config",
 ]
 
@@ -162,7 +157,7 @@ def _build(self, key, override_map=None):
 # -- project scaffolding, config, and plugins ------------------------------------
 
 def _create_folders():
-    root = Path(__file__).resolve().parent.parent.parent.parent
+    root = Path.cwd()
     for folder in PROJECT_FOLDERS:
         path = root / folder
         path.mkdir(parents=True, exist_ok=True)

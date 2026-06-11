@@ -1,23 +1,36 @@
 import importlib
 import inspect
 import logging
+from pathlib import Path
 
 from .Repository import Repository
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_DRIVER = "memory"
+DEFAULT_DRIVER = "sqlite"
 
 
 def install(container):
-    # explicit bindings (config/bindings.py, loaded before plugins) always win
-    if Repository in container._bindings:
-        logger.debug("Repository already bound, skipping driver setup")
-        return
+    _ensure_config()
 
     driver = database_config().get("driver", DEFAULT_DRIVER)
     container.provider(Repository, _driver_class(driver))
     logger.debug("ORM install: driver '%s'", driver)
+
+
+def _ensure_config():
+    root = Path(__file__).resolve().parent.parent.parent.parent
+    db_config = root / "config" / "database.py"
+    if db_config.exists():
+        return
+    db_config.write_text(f"""\
+# Database driver for the ORM plugin.
+# Available drivers: sqlite, memory
+database = {{
+    "driver": "{DEFAULT_DRIVER}",
+    "database": "database.db",
+}}
+""")
 
 
 def database_config():

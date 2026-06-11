@@ -11,21 +11,41 @@ SCAN_PATHS = ["app"]
 def install(container):
     interfaces, implementations = _discover(SCAN_PATHS)
 
+    imports = set()
+    bindings = {}
+
     for abc_cls in interfaces:
-        if abc_cls in container._bindings:
-            continue  # explicit bindings (config/bindings.py) always win
         impls = implementations.get(abc_cls, [])
         if len(impls) == 1:
-            container.provider(abc_cls, impls[0])
-            logger.debug("Auto-bind %s -> %s", abc_cls.__name__, impls[0].__name__)
+            impl = impls[0]
+            imports.add(f"from {abc_cls.__module__} import {abc_cls.__name__}")
+            imports.add(f"from {impl.__module__} import {impl.__name__}")
+            bindings[abc_cls.__name__] = impl.__name__
         elif len(impls) > 1:
             names = ', '.join(i.__name__ for i in impls)
             logger.debug(
                 "Skipping auto-bind for %s: multiple implementations (%s). "
-                "Declare it in config/bindings.py", abc_cls.__name__, names
+                "Override in config/bindings.py", abc_cls.__name__, names
             )
 
-    logger.debug("Autobind install")
+    if not bindings:
+        logger.debug("Autobind install (no bindings found)")
+        return
+
+    root = Path(__file__).resolve().parent.parent.parent.parent
+    bindings_path = root / "config" / "bindings.py"
+
+    import_lines = "\n".join(sorted(imports))
+    binding_lines = "\n".join(f"    {k}: {v}," for k, v in bindings.items())
+
+    content = f"""{import_lines}
+
+bindings = {{
+{binding_lines}
+}}
+"""
+    bindings_path.write_text(content)
+    logger.debug("Autobind install -> wrote config/bindings.py")
 
 
 def _discover(scan_paths):

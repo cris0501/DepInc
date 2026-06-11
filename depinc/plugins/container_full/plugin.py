@@ -1,8 +1,20 @@
 import importlib
 import inspect
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+PROJECT_FOLDERS = [
+    "app/ports/input",
+    "app/ports/output",
+    "app/use_cases",
+    "app/domain",
+    "app/adapters/input",
+    "app/adapters/output",
+    "app/middlewares",
+    "config",
+]
 
 
 def install(container):
@@ -22,9 +34,10 @@ def install(container):
     container.resolve = _resolve.__get__(container)
     container._build  = _build.__get__(container)
 
-    # -- load config and declared plugins -----------------------------
+    # -- setup project structure, install plugins, load config --------
+    _create_folders()
+    _install_plugins(container)
     _load_config(container)
-    _load_plugins(container)
     logger.debug("Container full install")
 
 
@@ -146,7 +159,17 @@ def _build(self, key, override_map=None):
     return instance
 
 
-# -- config and plugins ----------------------------------------------------------
+# -- project scaffolding, config, and plugins ------------------------------------
+
+def _create_folders():
+    root = Path(__file__).resolve().parent.parent.parent.parent
+    for folder in PROJECT_FOLDERS:
+        path = root / folder
+        path.mkdir(parents=True, exist_ok=True)
+        init = path / "__init__.py"
+        if not init.exists():
+            init.write_text("")
+
 
 def _load_config(container):
     try:
@@ -159,12 +182,11 @@ def _load_config(container):
         pass
 
 
-def _load_plugins(container):
+def _install_plugins(container):
     try:
         from depinc.plugins import plugins
     except ImportError:
         return
-    # plugin failures must not be swallowed: a broken plugin should fail loudly
     for name in plugins:
         mod = importlib.import_module(f"depinc.plugins.{name}.plugin")
         mod.install(container)

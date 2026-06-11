@@ -24,12 +24,10 @@ class Container:
             if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
                 continue
             args.append(self._build(param.annotation))
-        print(f"Class: {args}")
         return cls(*args)
 
     def auto_discover(self):
-        for path in ["app/use_cases", "app/ports/input", "app/ports/output"]:
-            self._scan_path(path)
+        self._scan_path("app")
 
     def _scan_path(self, rel_path):
         base = Path(rel_path)

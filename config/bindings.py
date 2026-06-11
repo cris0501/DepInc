@@ -1,12 +1,9 @@
-# Explicit bindings are only needed when a port has multiple implementations
-# (ambiguity) or you want to force one different from the convention.
-# The 'autobind' plugin automatically binds each interface to its single
-# discovered implementation under app/.
-#
-# Example (force a driver regardless of config/database.py):
-# from depinc import Repository
-# from depinc.plugins.orm.drivers.memory import MemoryRepository
-#
-# bindings = {Repository: MemoryRepository}
+from app.adapters.output.console_event_dispatcher import ConsoleEventDispatcher
+from app.ports.input.flight_service_port import FlightServicePort
+from app.ports.output.event_dispatcher import EventDispatcher
+from app.use_cases.flight_service import FlightService
 
-bindings = {}
+bindings = {
+    FlightServicePort: FlightService,
+    EventDispatcher: ConsoleEventDispatcher,
+}

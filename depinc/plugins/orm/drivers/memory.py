@@ -1,4 +1,5 @@
-from depinc import Repository
+from ..Repository import Repository
+
 
 class MemoryRepository(Repository):
     def __init__(self):

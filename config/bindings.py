@@ -3,9 +3,9 @@
 # The 'autobind' plugin automatically binds each interface to its single
 # discovered implementation under app/.
 #
-# Example:
+# Example (force a driver regardless of config/database.py):
 # from depinc import Repository
-# from app.adapters.output import MemoryRepository
+# from depinc.plugins.orm.drivers.memory import MemoryRepository
 #
 # bindings = {Repository: MemoryRepository}
 

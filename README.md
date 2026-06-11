@@ -11,7 +11,7 @@
 - Simple dependency injection container with circular-dependency detection.
 - **Auto-binding by convention** (`autobind` plugin): a port (ABC) with exactly one discovered implementation binds itself — no config edit needed.
 - CLI command routing as an input adapter.
-- In-memory and SQLite repositories as output adapters.
+- In-memory and SQLite repositories shipped as ORM drivers, selected globally via `config/database.py`.
 - Easily extensible domain models with dirty-tracking and fillable fields.
 - Middleware pipeline with `before` / `after` hooks, configured centrally via `config/middlewares.py`.
 - Local dependency overrides per service via `_bindings`.
@@ -186,7 +186,27 @@ class FlightService(Service, FlightServicePort):
 
 > `repository_for` is an explicit escape hatch that breaks strict hexagonal architecture. Use it only when colocation of a model with its preferred adapter is more important than layer purity.
 
-## SQLite Repository
+## ORM drivers
+
+Generic repositories are **framework infrastructure**, not app adapters: they live in `depinc/plugins/orm/drivers/` (`memory`, `sqlite`). The global driver is selected in `config/database.py`:
+
+```python
+# config/database.py
+database = {
+    "driver": "sqlite",        # or "memory"
+    "database": "database.db",
+}
+```
+
+Adding a new backend (mysql, mongo, redis...) is just dropping a `drivers/<name>.py` file exposing a `Repository` subclass — no other change needed.
+
+Override precedence, most specific wins:
+
+1. `model._repository` (via `Service.repository_for`)
+2. `service._bindings = {Repository: X}`
+3. call-site: `app.resolve(Port, {Repository: X})`
+4. `config/bindings.py` (explicit global override)
+5. `config/database.py` (global driver, bound by the ORM plugin)
 
 `SQLiteRepository` auto-migrates tables from the model's `_schema` on first use and supports `save` (INSERT or UPDATE based on `_exists`) and `find_by_id`. The table name is derived from `_table` or defaults to the lowercase class name with an `s` suffix.
 

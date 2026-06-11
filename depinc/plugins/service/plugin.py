@@ -1,2 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 def install(container):
-    print("Service install")
+    logger.debug("Service install")

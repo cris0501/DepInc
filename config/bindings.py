@@ -1,12 +1,12 @@
-from app.ports.input.flight_service_port import FlightServicePort
-from depinc import Repository
-from app.ports.output.event_dispatcher import EventDispatcher
-from app.adapters.output import MemoryRepository
-from app.adapters.output.console_event_dispatcher import ConsoleEventDispatcher
-from app.use_cases.flight_service import FlightService
+# Explicit bindings are only needed when a port has multiple implementations
+# (ambiguity) or you want to force one different from the convention.
+# The 'autobind' plugin automatically binds each interface to its single
+# discovered implementation under app/.
+#
+# Example:
+# from depinc import Repository
+# from app.adapters.output import MemoryRepository
+#
+# bindings = {Repository: MemoryRepository}
 
-bindings = {
-    FlightServicePort: FlightService,
-    Repository:        MemoryRepository,
-    EventDispatcher:   ConsoleEventDispatcher,
-}
+bindings = {}

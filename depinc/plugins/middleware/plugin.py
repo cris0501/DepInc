@@ -1,5 +1,10 @@
 # depinc/plugins/middleware/plugin.py
+import logging
+
 from .Middleware import apply
+
+logger = logging.getLogger(__name__)
+
 
 def install(container):
     from config.middlewares import middlewares
@@ -16,4 +21,4 @@ def install(container):
         return instance
 
     container.hook("after_resolve", _apply, priority=50)
-    print("Logger install")
+    logger.debug("Middleware install")

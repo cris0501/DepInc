@@ -7,7 +7,9 @@
 ## Features
 
 - True **Hexagonal Architecture** with clear separation of domain, use cases, and adapters.
+- **Minimal core, everything is a plugin**: container features (singletons, hooks, auto-binding, ORM, middleware) are installed by plugins that extend the container at runtime.
 - Simple dependency injection container with circular-dependency detection.
+- **Auto-binding by convention** (`autobind` plugin): a port (ABC) with exactly one discovered implementation binds itself — no config edit needed.
 - CLI command routing as an input adapter.
 - In-memory and SQLite repositories as output adapters.
 - Easily extensible domain models with dirty-tracking and fillable fields.
@@ -63,17 +65,19 @@ An interactive scaffolding utility for generating files that follow the recommen
 
 ## Container
 
-The container loads bindings from `config/bindings.py` and middlewares from `config/middlewares.py` at startup. It resolves nested dependencies automatically, detects circular references, and validates that every constructor parameter has a type annotation and a registered binding.
+The container core is deliberately minimal; the `container_full` plugin installs singletons, hooks (`before_resolve` / `after_resolve`), call-site overrides, circular-dependency detection, and loads config plus the declared plugins. It resolves nested dependencies automatically and validates that every constructor parameter has a type annotation.
 
-**Global bindings** (`config/bindings.py`) declare which concrete class satisfies each interface across the whole application:
+**Auto-binding by convention** (`autobind` plugin) — the app is scanned and every port (ABC) with exactly one concrete implementation is bound automatically. Adding a new port + implementation requires **no config changes**.
+
+**Global bindings** (`config/bindings.py`) are only needed to resolve ambiguities (a port with several implementations) or to force a specific one — explicit bindings always win over the convention:
 
 ```python
 bindings = {
-    FlightServicePort: FlightService,
-    Repository:        MemoryRepository,
-    EventDispatcher:   ConsoleEventDispatcher,
+    Repository: SQLiteRepository,   # pick one among several implementations
 }
 ```
+
+**Singletons** — classes with `_singleton = True` (like `Repository`) are built once and shared, including when they appear as nested dependencies of different services.
 
 **Resolution** builds the full dependency graph from the type annotations in each class's `__init__`:
 
